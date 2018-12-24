@@ -1,0 +1,84 @@
+-runfw: org.apache.felix.framework;version='[5.6.10,5.6.10]'
+-runee: JavaSE-1.8
+
+-runsystemcapabilities: ${native_capability}
+
+-resolve.effective: active;skip:="osgi.service"
+
+-runsystempackages: sun.misc,sun.nio.ch
+
+-runvm:-DbaseDir=${user.home},\
+		-DisMaster=true
+
+-runproperties: org.osgi.service.http.port=8081
+
+-runrequires: \
+	bnd.identity;id='org.apache.felix.webconsole.plugins.ds',\
+	bnd.identity;id='com.vaadin.client-compiled',\
+	bnd.identity;id='com.vaadin.themes',\
+	bnd.identity;id='net.qnenet.qLogging',\
+	bnd.identity;id='net.qnenet.qThemeSea',\
+	bnd.identity;id='net.qnenet.qSiteUser',\
+	bnd.identity;id='slf4j.simple',\
+	bnd.identity;id='net.qnenet.qViewHome',\
+	bnd.identity;id='net.qnenet.qViewNewSystemEnter',\
+	bnd.identity;id='net.qnenet.qViewOpenLocker',\
+	bnd.identity;id='net.qnenet.qViewOpenLockerFail',\
+	bnd.identity;id='net.qnenet.qEntity',\
+	bnd.identity;id='net.qnenet.qViewCreateLockerKey',\
+	bnd.identity;id='net.qnenet.qViewSetup',\
+	bnd.identity;id='net.qnenet.qViewSetupLocalEntities',\
+	bnd.identity;id='net.qnenet.qViewSetupManageEntities'
+	
+	
+-runbundles: \
+	bcprov;version='[1.59.0,1.59.1)',\
+	com.esotericsoftware.kryo;version='[4.0.2,4.0.3)',\
+	com.esotericsoftware.minlog;version='[1.3.0,1.3.1)',\
+	com.esotericsoftware.reflectasm;version='[1.11.7,1.11.8)',\
+	com.vaadin.client-compiled;version='[8.5.1,8.5.2)',\
+	com.vaadin.external.gentyref;version='[1.2.0,1.2.1)',\
+	com.vaadin.server;version='[8.5.1,8.5.2)',\
+	com.vaadin.shared;version='[8.5.1,8.5.2)',\
+	com.vaadin.themes;version='[8.5.1,8.5.2)',\
+	io.netty.buffer;version='[4.1.28,4.1.29)',\
+	io.netty.codec;version='[4.1.28,4.1.29)',\
+	io.netty.common;version='[4.1.28,4.1.29)',\
+	io.netty.handler;version='[4.1.28,4.1.29)',\
+	io.netty.resolver;version='[4.1.28,4.1.29)',\
+	io.netty.transport;version='[4.1.28,4.1.29)',\
+	net.qnenet.qEntity;version=snapshot,\
+	net.qnenet.qGlobalClassIds;version=snapshot,\
+	net.qnenet.qGlobalEntities;version=snapshot,\
+	net.qnenet.qLogging;version=snapshot,\
+	net.qnenet.qSCObjectStore;version=snapshot,\
+	net.qnenet.qSecurityUtils;version=snapshot,\
+	net.qnenet.qSerialization;version=snapshot,\
+	net.qnenet.qSiteUser;version=snapshot,\
+	net.qnenet.qSystemInfo;version=snapshot,\
+	net.qnenet.qThemeSea;version=snapshot,\
+	net.qnenet.qUtils;version=snapshot,\
+	net.qnenet.qViewCreateLockerKey;version=snapshot,\
+	net.qnenet.qViewHome;version=snapshot,\
+	net.qnenet.qViewNewSystemEnter;version=snapshot,\
+	net.qnenet.qViewOpenLocker;version=snapshot,\
+	net.qnenet.qViewOpenLockerFail;version=snapshot,\
+	org.apache.felix.configadmin;version='[1.8.16,1.8.17)',\
+	org.apache.felix.eventadmin;version='[1.4.10,1.4.11)',\
+	org.apache.felix.http.jetty;version='[3.4.8,3.4.9)',\
+	org.apache.felix.http.servlet-api;version='[1.1.2,1.1.3)',\
+	org.apache.felix.log;version='[1.0.1,1.0.2)',\
+	org.apache.felix.scr;version='[2.0.14,2.0.15)',\
+	org.apache.felix.webconsole;version='[4.3.4,4.3.5)',\
+	org.apache.felix.webconsole.plugins.ds;version='[2.0.8,2.0.9)',\
+	org.jsoup;version='[1.11.3,1.11.4)',\
+	org.objectweb.asm;version='[5.1.0,5.1.1)',\
+	org.objenesis;version='[2.6.0,2.6.1)',\
+	slf4j.api;version='[1.7.25,1.7.26)',\
+	slf4j.simple;version='[1.7.25,1.7.26)',\
+	net.qnenet.qBaseNTOs;version=snapshot,\
+	net.qnenet.qNetworkClasses;version=snapshot,\
+	net.qnenet.qENetwork;version=snapshot,\
+	net.qnenet.qViewSetup;version=snapshot,\
+	net.qnenet.qViewSetupLocalEntities;version=snapshot,\
+	net.qnenet.qViewSetupManageEntities;version=snapshot

@@ -1,0 +1,55 @@
+
+package net.qnenet.qSiteUser.provider.servlet;
+
+import org.osgi.service.component.ComponentServiceObjects;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
+import com.vaadin.server.UIClassSelectionEvent;
+import com.vaadin.server.UICreateEvent;
+import com.vaadin.server.UIProvider;
+import com.vaadin.ui.UI;
+
+import net.qnenet.ecSite2018.api.QUI;
+import net.qnenet.ecSite2018.provider.ui.QSiteUserImpl;
+import net.qnenet.qLogging.api.QLog;
+
+@Component(service=QUIProviderImpl.class)
+public class QUIProviderImpl extends UIProvider {
+
+    private static final long serialVersionUID = 3597397776591350473L;
+
+    @Reference
+    ComponentServiceObjects<QUI> mainUIFactory;
+    
+    @Reference
+	QLog qLog;
+
+	@Activate
+	void activate() {
+		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+		qLog.logDeactivate(this);
+	}
+
+
+    @Override
+    public Class<? extends UI> getUIClass(UIClassSelectionEvent event) {
+        return QSiteUserImpl.class;
+    }
+
+    @Override
+    public UI createInstance(UICreateEvent event) {
+        QUI ui = this.mainUIFactory.getService();
+
+//        ui.addComponentDetachListener(x -> this.mainUIFactory.ungetService(ui));
+
+        return (UI) ui;
+    }
+
+}

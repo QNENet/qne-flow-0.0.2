@@ -1,0 +1,38 @@
+package net.qnenet.qSiteUser.api.toolbarBase;
+
+import java.util.Dictionary;
+
+import org.osgi.annotation.versioning.ProviderType;
+
+
+
+
+/**
+ * <p>
+ * This is an example of an interface that is expected to be implemented by Providers of the API. Adding methods to this
+ * interface is a minor change, because only Providers will be affected.
+ * </p>
+ * 
+ * @see ProviderType
+ * @since 1.0
+ */
+@ProviderType
+public interface QViewToolbarBaseFactory {
+
+//	ComponentFactory getFactory();
+
+//	QVToolbarBase getInstance();
+
+	QVToolbarBase getInstance(Dictionary<String, Object> props);
+
+
+//	public String baseView = "";
+//	public String parent = "";
+//	public String viewName = "VBase100";
+//	public String buttonCaption = "";
+	
+	
+//	public QVBase100 createViewBaseInstance();
+
+
+}

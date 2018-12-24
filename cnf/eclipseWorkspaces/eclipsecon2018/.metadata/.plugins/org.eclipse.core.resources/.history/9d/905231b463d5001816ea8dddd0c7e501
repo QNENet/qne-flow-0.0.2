@@ -1,0 +1,20 @@
+-buildpath: \
+	osgi.annotation;version=6.0.1,\
+	osgi.core;version=6.0,\
+	osgi.cmpn;version=6.0,\
+	javax.servlet-api,\
+	com.vaadin.server,\
+	com.vaadin.shared,\
+	org.jsoup
+
+-testpath: \
+	${junit}
+
+javac.source: 1.8
+javac.target: 1.8
+
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: net.qnenet.qSiteUser.provider.*
+Export-Package: net.qnenet.qSiteUser.api.*
+
+-sources: false

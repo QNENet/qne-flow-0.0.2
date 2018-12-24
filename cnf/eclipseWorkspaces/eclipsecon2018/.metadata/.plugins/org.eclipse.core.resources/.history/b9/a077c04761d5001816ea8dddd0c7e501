@@ -1,0 +1,73 @@
+package net.qnenet.qSiteUser.api.toolbarBase;
+
+import org.osgi.annotation.versioning.ProviderType;
+
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.VerticalLayout;
+
+import net.qnenet.qSiteUser.api.QUI;
+import net.qnenet.qSiteUser.api.view.QViewInstance;
+
+
+/**
+ * <p>
+ * This is an example of an interface that is expected to be implemented by Providers of the API. Adding methods to this
+ * interface is a minor change, because only Providers will be affected.
+ * </p>
+ * 
+ * @see ProviderType
+ * @since 1.0
+ */
+@ProviderType
+public interface QVToolbarBase {
+
+	void doViewInstanceSetup(QUI qUI, QViewInstance qViewLocal);
+
+	void addOverlay(QViewInstance viewInstance);
+
+	Button getBackNavButton();
+
+	Button getNextNavButton();
+
+	VerticalLayout getMenuLayout();
+
+	void overlayEnter();
+
+	void overlayExit();
+
+	boolean isHomeView();
+
+	void removeView(String viewName);
+
+	void setNavBtnBeforevView(String viewName);
+
+	void setNavBtnAfterView(String viewName);
+
+	void addNavSetPanel(Panel panel);
+
+	void setdisplayWindowWidth(String width);
+
+	void setdisplayWindowHeight(String height);
+
+	void setdisplayWindowStyle(String style);
+
+//	QEntity getEntity();
+
+	void setQUI(QUI qUI);
+
+//	void setLockerPath(Path lockerPath);
+
+	void setIdx(Integer idx);
+
+	void browserWindowResize(int width, int height);
+
+	int getBrowserWidth();
+
+	int getBrowserHeight();
+
+//	QEntity getEntity();
+
+
+
+}

@@ -1,0 +1,347 @@
+package net.qnenet.qViewCreateLockerKay.provider.views;
+
+import java.util.Map;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
+import com.vaadin.shared.ui.ContentMode;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.declarative.Design;
+import com.vaadin.ui.themes.ValoTheme;
+
+import net.qnenet.qEntity.api.entity.QEntityFactory;
+import net.qnenet.qLogging.api.QLog;
+import net.qnenet.qSCObjectStore.api.QSCObjectStore;
+import net.qnenet.qSecurityUtils.api.QSecurityUtils;
+import net.qnenet.qSiteUser.api.QComponentFactory;
+import net.qnenet.qSiteUser.api.QUI;
+import net.qnenet.qSiteUser.api.toolbarBase.QVToolbarBase;
+import net.qnenet.qSiteUser.api.view.QViewFactory;
+import net.qnenet.qSiteUser.api.view.QViewInstance;
+import net.qnenet.qSystemInfo.api.QSCLockersInfo;
+import net.qnenet.qSystemInfo.api.QSystemInfo;
+import net.qnenet.qUtils.base36.Base36;
+import net.qnenet.qUtils.files.QFileUtils;
+import net.qnenet.qUtils.string.StringUtils;
+import net.qnenet.qViewCreateLockerKay.api.QViewCreateLockerKey;
+import net.qnenet.qViewCreateLockerKay.provider.designer.QViewCreateLockerKeyDesign;
+
+@SuppressWarnings("serial")
+@Component(factory = "qViewCreateLockerKey")
+public class QViewCreateLockerKeyImpl extends QViewCreateLockerKeyDesign
+		implements QViewCreateLockerKey, QViewInstance {
+
+	static {
+		Design.setComponentFactory(new QComponentFactory());
+	}
+
+	@Reference
+	QLog qLog;
+
+	@Reference
+	QEntityFactory entityFactory;
+
+	@Reference
+	QSystemInfo systemInfo;
+
+	@Reference
+	QSCObjectStore qSCObjectStore;
+
+	@Reference
+	QSecurityUtils securityUtils;
+
+	private QVToolbarBase toolbarBase;
+
+	private QViewFactory parentFactory;
+
+//	private QUI qUI;
+//
+//	private String lockerKey;
+
+	private QSCLockersInfo lockersInfo;
+
+	private VerticalLayout displayLayout;
+
+	private Panel displayPanel;
+
+	private String lockerKeyText = "";
+
+	@Activate
+	void activate(Map<String, Object> map) {
+
+		if (QFileUtils.checkDirectory(systemInfo.lockersPath())) {
+
+			if (System.getProperty("isMaster").equals("true")) {
+				setUpNewMaster();
+			} else {
+				setUpNew();
+			}
+		}
+
+//		createKey.addClickListener(click -> {
+//
+//			char[] lockerKey = setUpNew();
+//			Window window = createLoginKeyWindow(lockerKey);
+//			
+//			qUI.showView("VLogin");
+//			
+//			qUI.addWindow(window);
+//		});
+
+		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+		qLog.logDeactivate(this);
+	}
+
+	@Override
+	public void setUp(QUI qUI, QVToolbarBase toolbarBase, QViewFactory viewFactory) {
+//		this.qUI = qUI;
+
+		this.parentFactory = viewFactory;
+
+		this.toolbarBase = toolbarBase;
+
+		toolbarBase.doViewInstanceSetup(qUI, this);
+
+		toolbarBase.addOverlay(this);
+
+	}
+
+	@Override
+	public void enter() {
+		qLog.info(this, "Nav Button System Enter -> ");
+
+//		if (lockerKeyText.isEmpty() ) {
+//			setUpNew();
+//		}
+	}
+
+	@Override
+	public void exit() {
+//		qUI.hideDisplayWindow();
+	}
+
+	@Override
+	public void backNavBtnClicked(int currentNavSetIdx) {
+		qLog.info(this, "Back Nav Button Pressed -> " + currentNavSetIdx);
+
+	}
+
+	@Override
+	public void nextNavBtnClicked(int currentNavSetIdx) {
+		qLog.info(this, "Next Nav Button Pressed -> " + currentNavSetIdx);
+
+	}
+
+	@Override
+	public void setupNavPanels() {
+		toolbarBase.setdisplayWindowWidth("70%");
+		toolbarBase.setdisplayWindowHeight("70%");
+		toolbarBase.setdisplayWindowStyle("");
+
+		toolbarBase.setNavBtnBeforevView(parentFactory.getPrevViewName());
+		toolbarBase.setNavBtnAfterView(parentFactory.getNextViewName());
+
+		Panel displayPanel1 = setupDisplayWindowPanel(displayText1);
+		toolbarBase.addNavSetPanel(displayPanel1);
+
+		Panel displayPanel2 = setupDisplayWindowPanel(lockerKeyText);
+		toolbarBase.addNavSetPanel(displayPanel2);
+
+//		Panel displayPanel3 = setupDisplayWindowPanel(displayText3);
+//		toolbarBase.addNavSetPanel(displayPanel3);
+	}
+
+	@Override
+	public void browserWindowResize() {
+	}
+
+	private Panel setupDisplayWindowPanel(String displayText) {
+
+		displayPanel = new Panel();
+
+		displayPanel.addStyleNames("");
+
+		displayPanel.addStyleNames(ValoTheme.PANEL_BORDERLESS);
+
+		displayPanel.setSizeFull();
+
+		displayLayout = new VerticalLayout();
+
+		Label label = new Label(displayText, ContentMode.HTML);
+
+		label.setSizeFull();
+
+		displayLayout.addComponent(label);
+
+		displayPanel.setContent(displayLayout);
+
+		return displayPanel;
+	}
+	
+	private void setUpNewMaster() {
+		setUpNew();
+		addNewEntity();
+	}
+
+
+	private void addNewEntity() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void setUpNew() {
+//		QFileUtils.checkDirectory(systemInfo.lockersPath());
+		lockersInfo = new QSCLockersInfo();
+		lockersInfo.virtualLockersArray = new Integer[605];
+		saveLockersInfo();
+
+		int loginKeyInt = entityFactory.createNewEntity();
+
+//		QSCEntityInfo entityInfo = new QSCEntityInfo();
+//
+//		QSecrets secrets = securityUtils.createNoiseSecrets();
+//		entityInfo.masterPwd = secrets.masterPwd.clone();
+//		entityInfo.privateKey = secrets.privateKey.clone();
+//		entityInfo.publicKey = secrets.publicKey.clone();
+//		secrets.makeSafe();
+//
+//		Integer lockerId = getFreeVirtualLockerId(null, null);
+//		Integer lockerIdx = getLockerIdx(lockerId);
+//
+//		int entityPin = RandomUtils.randomIntBetween(0, 99999);
+//		int loginKeyInt = (lockerId * 100000) + entityPin;
+//
+//		entityInfo.loginKeyChars = String.valueOf(loginKeyInt).toCharArray();
+//
+//		System.out.println(Base36.intToQNEName(loginKeyInt)); // .toUpperCase());
+//
+//		Path lockerPath = Paths.get(systemInfo.lockersPath().toString(), String.valueOf(lockerIdx));
+//
+//		QFileUtils.checkDirectory(lockerPath);
+//
+//		Key key = securityUtils.keyFromInt(loginKeyInt);
+//
+//		entityInfo.lockerPathStr = lockerPath.toString();
+//
+//		if (systemInfo.isBootMaster()) {
+//			entityInfo.scEntityAddr = new QSCEntityIPV4Addr(systemInfo.getMasterBootIPAddr(),
+//					systemInfo.getMasterBootPort());
+//		} else {
+//			entityInfo.scEntityAddr = new QSCEntityIPV4Addr(NetworkUtils.getExternalAddress(),
+//					NetworkUtils.getFreePort());
+//		}
+//
+//		Path infoFilePath = Paths.get(entityInfo.lockerPathStr, "entityData", "stores", "entityInfo.data");
+//		qSCObjectStore.save(infoFilePath, entityInfo, key);
+
+		String lkey = Base36.intToQNEName(loginKeyInt).toUpperCase();
+
+		String str = new StringBuilder(lkey).insert(2, " ").toString();
+
+		lockerKeyText = displayText2.replace("XXXXXX", str);
+		lockerKeyText = lockerKeyText.replace("yyyyy", StringUtils.expandDigits(lkey));
+
+		((QUI) UI.getCurrent()).setHomeView("VHome");
+	}
+
+//	public Integer getLockerIdx(int lockerId) {
+//		return lockersInfo.virtualLockersArray[lockerId];
+//	}
+//
+//	public Integer getFreeVirtualLockerId(Integer lockerIdx, Integer oldVirtualLockerId) {
+//
+//		// free up old slot if in use
+//		if (oldVirtualLockerId != null) {
+//			lockersInfo.virtualLockersArray[oldVirtualLockerId] = null;
+//		}
+//
+//		int newVirtualLockerId = RandomUtils.randomIntBetween(18, 604);
+//
+//		int count = 0;
+//		while (lockersInfo.virtualLockersArray[newVirtualLockerId] != null) {
+//			newVirtualLockerId++;
+//			if (newVirtualLockerId > 604) {
+//				newVirtualLockerId = 18;
+//			}
+//			if (count++ > (604 - 18)) {
+//				return null;
+//			}
+//		}
+//
+//		if (lockerIdx == null) {
+//			lockerIdx = getNextLockerIdx();
+//		}
+//		lockersInfo.virtualLockersArray[newVirtualLockerId] = lockerIdx;
+//
+//		saveLockersInfo();
+//
+//		return newVirtualLockerId;
+//
+//	}
+//
+//	private Integer getNextLockerIdx() {
+//		return systemInfo.lockersPath().toFile().list().length;
+//	}
+
+	private void saveLockersInfo() {
+		qSCObjectStore.save(systemInfo.lockersStoreFilePath(), lockersInfo);
+	}
+
+	@Override
+	public QViewFactory getParentFactory() {
+		return parentFactory;
+	}
+
+//	private String html = "<p style=\"text-align: center;\"></p>\r\n"
+//			+ "<p style=\"text-align: center;\">Your Locker Key is</p>\r\n"
+//			+ "<p style=\"text-align: center;\"><span style=\"color: #ff0000;\"><strong>XXX XXX</strong></span></p>\r\n"
+//			+ "<p style=\"text-align: center;\"><span style=\"color: #ffff00; background-color: #000000;\">yyyyyy</span></p>\r\n"
+//			+ "<p style=\"text-align: center;\">This is the last time it will be displayed.</p>\r\n"
+//			+ "<p style=\"text-align: center;\">Write it down and keep private.</p>\r\n"
+//			+ "<p style=\"text-align: center;\">It is the key to access your private data,</p>\r\n"
+//			+ "<p style=\"text-align: center;\">including passwords and other information.</p>";
+
+	private String displayText1 = "<h1 style=\"text-align: center;\"><strong>Create Locker Key</strong></h1>\n"
+			+ "<p>&nbsp;</p>\n"
+			+ "<p style=\"padding-left: 30px;\"><strong>To gain access to the Quick N Easy Network</strong><strong>&nbsp;</strong><strong>you&nbsp;</strong><strong>need to have a Locker Key.</strong></p>\n"
+			+ "<p style=\"padding-left: 30px;\"><strong>This key is automatically generated for you.</strong></p>\n"
+			+ "<p style=\"padding-left: 30px;\"><strong><strong>You CANNOT choose your own key.</strong></strong></p>\n"
+			+ "<p style=\"padding-left: 30px;\"><strong>It is the key to the security of your data.</strong></p>\n"
+			+ "<p style=\"padding-left: 30px;\"><strong>Anyone that gains access to this key can view&nbsp;</strong><strong>and change your data.</strong></p>\n"
+			+ "<p style=\"padding-left: 30px;\"><span style=\"color: #ff0000;\"><strong>Keep it private.</strong></span></p>\n"
+			+ "<p style=\"padding-left: 30px;\"><span style=\"color: #000000;\"><strong>You need to make your own decisions about&nbsp;</strong></span><span><strong>how&nbsp;</strong></span><strong>you control it.</strong></p>\n"
+			+ "<p style=\"padding-left: 30px;\"><span style=\"color: #ff00ff;\"><strong>If lost, you will lose access to your data. </strong></span></p>\n"
+			+ "<h2 style=\"padding-left: 30px;\"><span style=\"color: #ff0000;\"><strong>There is no other copy.</strong></span></h2>\n"
+			+ "<p style=\"padding-left: 30px;\"><span style=\"color: #000000;\"><strong>Your security is up to you.</strong></span></p>\n"
+			+ "<p style=\"padding-left: 30px;\">&nbsp;</p>";
+
+	private String displayText2 = "<h2 style=\"text-align: center;\"><strong>Your locker key is</strong></h2>\n"
+			+ "<h3 style=\"text-align: center;\"><strong><span style=\"color: #ff0000;\">XXXXXX</span></strong></h3>\n"
+			+ "<h3 style=\"text-align: center;\"><span style=\"color: #ffff00; background-color: #000000;\">yyyyy</span></h3>\n"
+			+ "<p style=\"text-align: center;\"><strong>This is the last time it will be displayed.</strong></p>\n"
+			+ "<p style=\"text-align: center;\"><strong>Write it down <span style=\"color: #ff00ff;\">NOW</span> and keep it private.</strong></p>\n"
+			+ "<p style=\"text-align: center;\"><strong>It is the key to accessing your private data, including passwords and all other information.</strong></p>\n"
+			+ "<p style=\"text-align: center;\"><strong>The next button (&gt;) will move you to the login screen.</strong></p>\n"
+			+ "<p style=\"text-align: center;\"><strong>Enter your locker key on the login screen to start your <span style=\"color: #339966;\">Quick N Easy Network trial</span>&nbsp;</strong><strong>.</strong></p>\n"
+			+ "<p style=\"text-align: center;\">&nbsp;</p>";
+
+	private String displayText3 = "<p style=\"text-align: center;\"><span style=\"color: #3366ff;\"><strong><span style=\"color: #ccffff;\">The community </span><span style=\"color: #ff0000;\">fighting back </span><span style=\"color: #ccffff;\">is</span></strong></span></p> \n"
+			+ "<h2 style=\"text-align: center;\"><span style=\"color: #00ff00;\"><strong>Quick N Easy</strong></span></h2> \n"
+			+ "<p style=\"text-align: center;\"><span style=\"color: #00ff00;\"><strong>(QNENet)</strong></span></p> \n"
+			+ "<p style=\"text-align: center;\"><span style=\"color: #ccffff;\"><strong>Membership provides</strong></span></p> \n"
+			+ "<p style=\"text-align: center;\"><span style=\"color: #ccffff;\"><strong>A growing portfolio of software modules to enable members to simplify their day to day living and computing tasks.</strong></span></p> \n"
+			+ "<p style=\"text-align: center;\"><span style=\"color: #ccffff;\"><strong>Members data is encrypted and access is only available to a member by use of a special locker key.</strong></span></p> \n"
+			+ "<p style=\"text-align: center;\"><span style=\"color: #ccffff;\"><strong>Members communications are direct, one to one, they do not pass through a third party.&nbsp; </strong></span></p> \n"
+			+ "<p style=\"text-align: center;\"><span style=\"color: #ccffff;\"><strong>Members are assured of each others identity and the content of members communication is not readable by prying eyes.&nbsp;</strong></span></p>";
+
+}

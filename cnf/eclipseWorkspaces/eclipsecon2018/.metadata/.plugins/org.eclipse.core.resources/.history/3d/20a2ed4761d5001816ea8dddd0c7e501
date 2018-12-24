@@ -1,0 +1,76 @@
+package net.qnenet.qSiteUser.api;
+
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.declarative.Design.ComponentFactory;
+import com.vaadin.ui.declarative.DesignContext;
+import com.vaadin.ui.declarative.DesignException;
+import com.vaadin.util.ReflectTools;
+
+/**
+ * Default implementation of {@link ComponentFactory}, using
+ * <code>Class.forName(className).newInstance()</code> for finding the component
+ * class and creating a component instance.
+ *
+ * @since 7.4.1
+ */
+@SuppressWarnings("serial")
+public class QComponentFactory implements ComponentFactory {
+	
+	private ClassLoader vaadinClassLoader;
+
+	public QComponentFactory() {
+		vaadinClassLoader = Label.class.getClassLoader();
+	}
+
+	@Override
+	public Component createComponent(String fullyQualifiedClassName, DesignContext context) {
+
+		Class<? extends Component> componentClass;
+		try {
+			componentClass = resolveComponentClass(fullyQualifiedClassName, context);
+		} catch (DesignException e) {
+			// Try with an inner class.
+			int lastDot = fullyQualifiedClassName.lastIndexOf('.');
+			if (lastDot != -1) {
+				String qualifiedInnerClassName = fullyQualifiedClassName.substring(0, lastDot) + "$"
+						+ fullyQualifiedClassName.substring(lastDot + 1);
+				return createComponent(qualifiedInnerClassName, context);
+			} else {
+				throw e;
+			}
+
+		}
+
+		assert Component.class.isAssignableFrom(componentClass) : "resolveComponentClass returned " + componentClass
+				+ " which is not a Vaadin Component class";
+
+		try {
+			return ReflectTools.createInstance(componentClass);
+		} catch (Exception e) {
+			throw new DesignException("Could not create component " + fullyQualifiedClassName, e);
+		}
+	}
+
+	/**
+	 * Resolves a component class based on the fully qualified name of the class.
+	 *
+	 * @param qualifiedClassName
+	 *            the fully qualified name of the resolved class
+	 * @param context
+	 *            the design context for which the class is resolved
+	 * @return a component class object representing the provided class name
+	 */
+	protected Class<? extends Component> resolveComponentClass(String qualifiedClassName, DesignContext context) {
+		try {
+//			Class<?> componentClass = Class.forName(qualifiedClassName, true,VaadinServiceClassLoaderUtil.findDefaultClassLoader());
+			
+			Class<?> componentClass = Class.forName(qualifiedClassName, true, vaadinClassLoader);
+			
+			return componentClass.asSubclass(Component.class);
+		} catch (ClassNotFoundException e) {
+			throw new DesignException("Unable to load component for design", e);
+		}
+	}
+
+}

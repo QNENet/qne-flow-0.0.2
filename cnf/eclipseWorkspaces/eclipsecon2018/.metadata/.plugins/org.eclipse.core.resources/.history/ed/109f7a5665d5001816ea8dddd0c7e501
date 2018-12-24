@@ -1,0 +1,270 @@
+
+package net.qnenet.ecSite2018.provider.ui;
+
+import java.nio.file.Files;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ServiceScope;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
+
+import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.Viewport;
+import com.vaadin.annotations.Widgetset;
+import com.vaadin.server.Page;
+import com.vaadin.server.Page.BrowserWindowResizeEvent;
+import com.vaadin.server.Page.BrowserWindowResizeListener;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.ValoTheme;
+
+import net.qnenet.ecSite2018.api.QUI;
+import net.qnenet.ecSite2018.api.view.QViewFactory;
+import net.qnenet.ecSite2018.api.view.QViewInstance;
+import net.qnenet.ecSite2018.api.view.QViewRegister;
+
+//@Theme("themeSea")
+
+//@Widgetset("QWidgetset")
+//@PreserveOnRefresh
+//@Push // (value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET)
+@Viewport("width=device-width,initial-scale = 1.0")
+@Component(scope = ServiceScope.PROTOTYPE, property = { "loginView1=VNewSystemEnter", "loginView2=VOpenLocker",
+		"homeView1=VOpenLocker", "homeView2=VHome" })
+
+public class QSiteUserImpl extends UI implements QUI {
+
+	private static final long serialVersionUID = 1L;
+
+	private String loginView = "";
+	private String homeView = "";
+	private static final int TOOL_BAR_HEIGHT = 40;
+
+	@Reference
+	EventAdmin eventAdmin;
+
+	@Reference
+	QViewRegister viewRegister;
+
+	@SuppressWarnings("unused")
+	private boolean isTouchDevice;
+
+	Stack<String> menuStack = new Stack<>();
+
+	@SuppressWarnings("unused")
+	private Map<String, QViewFactory> viewFactories;
+
+	private Map<String, QViewInstance> qViews = new ConcurrentHashMap<>();
+
+	private Window menu;
+
+	private Panel menuPanel;
+
+	private VerticalLayout rootLayout;
+
+	private QViewInstance oldViewInstance;
+
+	private QViewInstance newViewInstance;
+
+	private Window displayWindow;
+
+	private Panel displayOldPanel;
+
+	private VerticalLayout displayWindowRoot;
+
+	Integer idx = null;
+
+//	private String sessionId;
+
+//	private int browserWindowWidth;
+//	private int browserWindowHeight;
+
+//	private String prevSessionId;
+//	private String newSessionId;
+	
+
+//	String[] topics = new String[] { "net/qnenet/viewbundlechanged" };
+
+	@Activate
+	void activate(BundleContext bundleContext, Map<String, Object> props) {
+
+//		if (Files.notExists(systemInfo.lockersPath())) {
+//			loginView = (String) props.get("loginView1");
+//			homeView = (String) props.get("homeView1");
+//		} else {
+//			loginView = (String) props.get("loginView2");
+//			homeView = (String) props.get("homeView2");
+//		}
+//
+//		Dictionary<String, Object> eventProps = new Hashtable<>();
+//		eventProps.put(EventConstants.EVENT_TOPIC, topics);
+//		bundleContext.registerService(EventHandler.class.getName(), this, eventProps);
+//		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+//		qLog.logDeactivate(this);
+	}
+
+	@Override
+	public void setHomeView(String viewName) {
+		homeView = viewName;
+	}
+
+	@SuppressWarnings("serial")
+	@Override
+	protected void init(VaadinRequest request) {
+
+
+		if (Page.getCurrent().getWebBrowser().isTouchDevice()) {
+			isTouchDevice = true;
+		}
+
+		rootLayout = new VerticalLayout();
+
+		rootLayout.setSizeFull();
+		rootLayout.setMargin(false);
+		rootLayout.setSpacing(false);
+
+		setContent(rootLayout);
+
+		viewFactories = viewRegister.getViewFactories();
+
+		showLoginView();
+
+	}
+
+	private void reset() {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void showLoginView() {
+		showView(loginView);
+	}
+
+	@Override
+	public void showHomeView() {
+		showView(homeView);
+	}
+
+	@Override
+	public void showView(String viewName) {
+
+		QViewInstance view = getViewInstance(viewName);
+		if (view == null) {
+			return;
+		}
+
+		newViewInstance = view;
+
+		rootLayout.replaceComponent((com.vaadin.ui.Component) oldViewInstance,
+				(com.vaadin.ui.Component) newViewInstance);
+		oldViewInstance = newViewInstance;
+	}
+
+	@Override
+	public QViewInstance getViewInstance(String viewName) {
+		return getViewInstance(viewName, null);
+	}
+
+	@Override
+	public QViewInstance getViewInstance(String viewName, Dictionary<String, Object> props) {
+		QViewInstance baseView = qViews.get(viewName);
+
+		if (baseView == null) {
+
+			QViewFactory viewFactory = viewRegister.getViewFactory(viewName);
+
+			if (viewFactory == null) {
+				return null;
+			}
+
+			baseView = toolbarBaseFactory.getInstance(null);
+
+			baseView.setQUI(this);
+			baseView.setIdx(idx);
+
+//			view.setLockerPath(lockerPath);
+
+			QViewInstance viewInstance = viewFactory.getInstance(props);
+
+			viewInstance.setUp(this, baseView, viewFactory);
+
+			qViews.put(viewName, baseView);
+
+		}
+
+		return baseView;
+	}
+
+
+	@Override
+	public void detach() {
+
+		System.out
+				.println("UI Detach 000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+//        try {
+//            // unregister before closing
+//            if(this.registration != null) {
+//                try {
+//                    this.registration.unregister();
+//                } catch (IllegalStateException ise) {
+//                    // The listener was already unregistered,
+//                    // so no problems here.
+//                }
+//            }
+////            log.info("MainUI.detach() called");
+//            super.detach();
+//        } catch (Exception e) {
+////            log.error("Detach Exception " + e.getMessage());
+//        }
+	}
+
+	@Override
+	public void close() {
+		System.out.println(
+				"UI Close %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+//        try {
+//            log.info("MainUI.close() called");
+//            if (this.alertView != null) {
+//                this.alertViewFactory.ungetService(this.alertView);
+//            }
+//            if (UI.getCurrent() != null && UI.getCurrent().getPage() != null) {
+//                UI.getCurrent().getPage().setLocation(getLogoutUrl());
+//            }
+//            super.close();
+//        } catch (Exception e) {
+//            log.error("Destroy Exception " + e.getMessage());
+//        }
+	}
+
+
+	private void removeViewEverywhere(String viewName) {
+		for (QViewInstance viewInstance : qViews.values()) {
+			viewInstance.removeView(viewName);
+		}
+
+		qViews.remove(viewName);
+
+//		viewFactories = viewManager.getViewFactories();
+
+	}
+
+}

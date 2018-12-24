@@ -1,0 +1,178 @@
+package net.qnenet.ecSite2018.provider.servlet;
+
+import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME;
+import static org.osgi.service.http.whiteboard.HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.http.context.ServletContextHelper;
+
+import net.qnenet.qLogging.api.QLog;
+
+@Component(name = "ui.servlet.context", service = ServletContextHelper.class, property = {
+		HTTP_WHITEBOARD_CONTEXT_NAME + "=" + QUIMainServletContext.QNE_UI_NAME, HTTP_WHITEBOARD_CONTEXT_PATH + "=/", })
+public class QUIMainServletContext extends ServletContextHelper implements BundleListener {
+	static final String QNE_UI_NAME = "QNE-UI";
+	static final String VAADIN_PREFIX = "/VAADIN/";
+
+	@Reference
+	QLog qLog;
+
+	@Activate
+	void activate(BundleContext ctx, Map<String, Object> props) {
+		ctx.addBundleListener(this);
+		for (Bundle bundle : ctx.getBundles()) {
+			addBundleResources(bundle);
+		}
+		
+		
+		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+		qLog.logDeactivate(this);
+	}
+
+	@Override
+	public boolean handleSecurity(final HttpServletRequest request, final HttpServletResponse response)
+			throws IOException {
+//        final String resource = request.getRequestURI();
+//        if (!resource.endsWith("/")) {
+//            URI resolve = this.base.resolve(QNE_RESOURCE_PREFIX.substring(1) + resource);
+//            if (new File(resolve).isDirectory()) {
+//                response.sendRedirect(resource + "/");
+//                return false;
+//            }
+//        }
+		return true;
+	}
+
+	@Override
+	public URL getResource(String name) {
+		qLog.info(this, "get resource - > " + name);
+		return vaadinMap.get(name);
+
+	}
+
+	@Override
+	public void bundleChanged(BundleEvent event) {
+		
+		qLog.setVerbose(true);
+		Bundle bundle = event.getBundle();
+
+		switch (event.getType()) {
+
+		case BundleEvent.STARTED:
+			addBundleResources(bundle);
+			break;
+
+		case BundleEvent.STOPPED:
+			removeBundleResources(bundle);
+			break;
+
+		case BundleEvent.INSTALLED:
+			break;
+		case BundleEvent.RESOLVED:
+			break;
+		case BundleEvent.STARTING:
+			break;
+		case BundleEvent.STOPPING:
+			break;
+		case BundleEvent.UNRESOLVED:
+			break;
+		case BundleEvent.UNINSTALLED:
+			break;
+		case BundleEvent.UPDATED:
+			break;
+
+		default:
+			break;
+		}
+
+	}
+
+	private List<Long> processedBundles = new CopyOnWriteArrayList<>();
+
+	private Map<String, URL> vaadinMap = new ConcurrentHashMap<>();
+
+	private void addBundleResources(Bundle bundle) {
+
+		long bundleId = bundle.getBundleId();
+
+		if (processedBundles.contains(bundleId)) {
+			return;
+		}
+
+		Enumeration<URL> entries = bundle.findEntries(VAADIN_PREFIX, "*", true);
+
+		if (entries == null) {
+			return;
+		}
+
+		String bsn = bundle.getSymbolicName();
+		
+//		System.out.println("bsn -> " + bsn);
+
+		processedBundles.add(bundleId);
+
+		if (bsn.equalsIgnoreCase("com.vaadin.server")) {
+			registerEntries(entries);
+		} else if (bsn.equalsIgnoreCase("com.vaadin.client-themes")) {
+			registerEntries(entries);
+		} else if (bsn.equalsIgnoreCase("com.vaadin.client-compiled")) {
+			registerEntries(entries);
+		} else {
+			registerEntries(entries);
+		}
+
+	}
+
+	private void registerEntries(Enumeration<URL> entries) {
+		while (entries.hasMoreElements()) {
+			URL url = entries.nextElement();
+			String urlString = url.toString();
+			
+//			System.out.println("register -> " + url);
+			
+			int idx = urlString.indexOf(VAADIN_PREFIX);
+			String key = urlString.substring(idx);
+			vaadinMap.put(key, url);
+		}
+	}
+
+	private void removeBundleResources(Bundle bundle) {
+		if (processedBundles.contains(bundle.getBundleId())) {
+			Enumeration<URL> entries = bundle.findEntries(VAADIN_PREFIX, "*", true);
+			unregisterEntries(entries);
+		}
+	}
+
+	private void unregisterEntries(Enumeration<URL> entries) {
+		while (entries.hasMoreElements()) {
+			URL url = entries.nextElement();
+			String urlString = url.toString();
+			int idx = urlString.indexOf(VAADIN_PREFIX);
+			String key = urlString.substring(idx);
+			vaadinMap.remove(key);
+		}
+	}
+
+}

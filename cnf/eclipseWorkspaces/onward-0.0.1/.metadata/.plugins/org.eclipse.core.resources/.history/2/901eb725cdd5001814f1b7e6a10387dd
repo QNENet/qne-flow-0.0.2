@@ -1,0 +1,606 @@
+package net.qnenet.qSiteUser.provider.toolbarBase;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Stack;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
+import com.vaadin.shared.ui.ContentMode;
+import com.vaadin.shared.ui.ValueChangeMode;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.declarative.Design;
+import com.vaadin.ui.themes.ValoTheme;
+
+import net.qnenet.qLogging.api.QLog;
+import net.qnenet.qSiteUser.api.QComponentFactory;
+import net.qnenet.qSiteUser.api.QUI;
+import net.qnenet.qSiteUser.api.toolbarBase.QVToolbarBase;
+import net.qnenet.qSiteUser.api.view.QViewFactory;
+import net.qnenet.qSiteUser.api.view.QViewInstance;
+import net.qnenet.qSiteUser.api.view.QViewRegister;
+import net.qnenet.qSiteUser.provider.designer.QVToolbarBaseDesign;
+import net.qnenet.qSystemInfo.api.QSystemInfo;
+
+//import net.qnenet.qEntity.api.QEntity;
+//import net.qnenet.qEntity.api.QEntityFactory;
+//import net.qnenet.qQuickManager.api.QQuickManager;
+//import net.qnenet.qViewManager.api.QComponentFactory;
+//import net.qnenet.qViewManager.api.QUI;
+//import net.qnenet.qViewManager.api.QVToolbarBase;
+//import net.qnenet.qViewRegister.api.QViewFactory;
+//import net.qnenet.qViewRegister.api.QViewInstance;
+//import net.qnenet.qViewRegister.api.QViewRegister;
+//import net.qnenet.qViewToolbarBase.provider.designer.QVToolbarBaseDesign;
+
+@SuppressWarnings("serial")
+@Component(factory = "qViewToolbarBase")
+public class QVToolbarBaseImpl extends QVToolbarBaseDesign implements QVToolbarBase {
+
+//	protected Panel toolbarPanel;
+//	protected HorizontalLayout toolbarHLayout;
+//	protected Button toolbarHomeBtn;
+//	protected Button toolbarMenuBtn;
+//	protected Button toolbarBackBtn;
+//	protected Label pageName;
+//	protected TextField quickText;
+//	protected Button toolbarStyleBtn;
+//	protected Button toolbarQuickBtn;
+//	protected VerticalLayout content;
+//	protected Panel navButtonsPanel;
+//	protected Button backNavBtn;
+//	protected Button nextNavBtn;
+
+	static {
+		Design.setComponentFactory(new QComponentFactory());
+	}
+
+	@Reference
+	QLog qLog;
+
+	@Reference
+	QSystemInfo systemInfo;
+
+//	@Reference
+//	QEntityFactory entityFactory;
+
+	@Reference
+	QViewRegister viewManager;
+
+//	@Reference
+//	QQuickManager quickManager;
+
+	Stack<String> menuStack;
+
+	private Map<String, QViewFactory> viewFactories;
+
+//	private int menuYOffset = 0;
+
+	private Window menu;
+
+	private QUI qUI;
+
+	private QViewFactory parentFactory;
+
+	private VerticalLayout menuLayout;
+
+	private String viewName;
+
+	private QViewInstance overlay;
+
+	private String navBtnBeforeView;
+
+	private String navBtnAfterView;
+
+	private ArrayList<Panel> navsetPanels;
+
+	private int currentNavSetIdx;
+
+	private String displayWindowWidth;
+
+	private String displayWindowHeight;
+
+	private String displayWindowStyle;;
+
+	private boolean hasNavBtns = false;
+
+//	private QEntity entity;
+
+	private Integer idx;
+
+	private int styleIdx = 0;
+
+	private String[] styles = new String[] { "simplicity", "home", "boots", "danceboy", "floating", "girlbeach",
+			"grasshouse", "greencar", "island", "kids", "grasshouse" };
+
+	private int newBrowserWidth;
+
+	private int newBrowserHeight;
+
+	@Activate
+	void activate(Map<String, Object> map) {
+		qLog.logActivate(this);
+
+		viewFactories = viewManager.getViewFactories();
+	}
+
+	@Deactivate
+	void deactivate() {
+		qLog.logDeactivate(this);
+	}
+
+	@Override
+	public void addOverlay(QViewInstance viewInstance) {
+		content.addComponent((com.vaadin.ui.Component) viewInstance);
+		overlay = viewInstance;
+	}
+
+	@Override
+	public VerticalLayout getMenuLayout() {
+		return menuLayout;
+	}
+
+	@Override
+	public void doViewInstanceSetup(QUI qUI, QViewInstance viewInstance) {
+
+//		this.qUI = qUI;
+		parentFactory = viewInstance.getParentFactory();
+
+		viewName = parentFactory.getViewName();
+
+		addStyleName(parentFactory.getBackgroundStyle());
+
+		if (parentFactory.hasToolbar()) {
+
+			toolbarPanel.setVisible(true);
+
+			pageName.setValue("");
+
+			setQuick(false);
+
+			initToolbarButtons();
+
+			if (isHomeView()) {
+				toolbarBackBtn.setVisible(false);
+			} else {
+				toolbarBackBtn.setVisible(true);
+			}
+
+		} else {
+			toolbarPanel.setVisible(false);
+		}
+
+		if (parentFactory.hasMenu()) {
+
+			menu = qUI.getMenu();
+
+			menuStack = qUI.getMenuStack();
+
+			createMenuButtons();
+
+		}
+
+		if (parentFactory.hasNavButtons()) {
+
+			hasNavBtns = true;
+
+			viewInstance.setupNavPanels();
+
+			navButtonsPanel.setVisible(true);
+
+			resetNavSystem();
+
+			nextNavBtn.addClickListener(click -> {
+				overlay.nextNavBtnClicked(currentNavSetIdx);
+
+				currentNavSetIdx++;
+
+				if (currentNavSetIdx >= navsetPanels.size()) {
+					resetNavSystem();
+					qUI.showView(navBtnAfterView);
+				} else {
+					showDisplayWindow();
+				}
+			});
+
+			backNavBtn.addClickListener(click -> {
+				overlay.backNavBtnClicked(currentNavSetIdx);
+				currentNavSetIdx--;
+				if (currentNavSetIdx < 0) {
+					resetNavSystem();
+					qUI.showView(navBtnBeforeView);
+				} else {
+					showDisplayWindow();
+				}
+			});
+
+		} else {
+			navButtonsPanel.setVisible(false);
+		}
+	}
+
+	private void resetNavSystem() {
+		currentNavSetIdx = 0;
+	}
+
+	@Override
+	public void overlayExit() {
+		if (hasNavBtns) {
+			qUI.hideDisplayWindow();
+		}
+		overlay.exit();
+	}
+
+	@Override
+	public void overlayEnter() {
+		if (hasNavBtns) {
+			showDisplayWindow();
+		}
+		overlay.enter();
+	}
+
+	private void showDisplayWindow() {
+		qUI.displayWindowShow(displayWindowWidth, displayWindowHeight, displayWindowStyle,
+				navsetPanels.get(currentNavSetIdx));
+	}
+
+	@Override
+	public void setdisplayWindowWidth(String width) {
+		this.displayWindowWidth = width;
+	}
+
+	@Override
+	public void setdisplayWindowHeight(String height) {
+		this.displayWindowHeight = height;
+	}
+
+	@Override
+	public void setdisplayWindowStyle(String style) {
+		this.displayWindowStyle = style;
+	}
+
+	@Override
+	public void setNavBtnBeforevView(String viewName) {
+		this.navBtnBeforeView = viewName;
+	}
+
+	@Override
+	public void setNavBtnAfterView(String viewName) {
+		this.navBtnAfterView = viewName;
+	}
+
+	@Override
+	public void addNavSetPanel(Panel panel) {
+		if (navsetPanels == null) {
+			navsetPanels = new ArrayList<>();
+		}
+		navsetPanels.add(panel);
+	}
+
+	@Override
+	public boolean isHomeView() {
+		return qUI.getHomeView().equalsIgnoreCase(viewName);
+	}
+
+	@Override
+	public Button getBackNavButton() {
+		return backNavBtn;
+	}
+
+	@Override
+	public Button getNextNavButton() {
+		return nextNavBtn;
+	}
+
+	public void initToolbarButtons() {
+
+		toolbarMenuBtn.addClickListener(click -> {
+			if (menuLayout == null) {
+				return;
+			}
+
+			if (menu.isVisible()) {
+				menu.setVisible(false);
+			} else {
+				menu.setVisible(true);
+			}
+		});
+
+		toolbarHomeBtn.addClickListener(click -> {
+			if (menuStack == null || menuStack.isEmpty()) {
+				return;
+			}
+			menu.setVisible(true);
+			((QUI) UI.getCurrent()).showHomeView();
+		});
+
+		toolbarBackBtn.addClickListener(click -> {
+			if (menuStack == null || menuStack.isEmpty()) {
+				return;
+			}
+
+			menuStack.pop();
+			if (menuStack.isEmpty()) {
+				((QUI) UI.getCurrent()).showHomeView();
+			} else {
+				((QUI) UI.getCurrent()).showView(menuStack.pop());
+			}
+
+		});
+
+		toolbarStyleBtn.addClickListener(click -> {
+			String nextStyle = styles[styleIdx];
+			styleIdx++;
+			if (styleIdx >= styles.length) {
+				styleIdx = 0;
+			}
+
+//			parentFactory.setBackgroundStyle(nextStyle);
+
+			addStyleName(parentFactory.getBackgroundStyle());
+
+		});
+
+		toolbarQuickBtn.addClickListener(click -> {
+			if (quickText.isVisible()) {
+				setQuick(false);
+			} else {
+				setQuick(true);
+			}
+		});
+
+		quickText.setValueChangeMode(ValueChangeMode.BLUR);
+
+//		quickText.addValueChangeListener(new ValueChangeListener<String>() {
+//
+//			@Override
+//			public void valueChange(ValueChangeEvent<String> event) {
+//				String cmd = event.getValue();
+//
+//				if (cmd.isEmpty()) {
+//					return;
+//				}
+//
+//				System.out.println("Value Changed -> " + cmd);
+////				boolean result = qwManager.despatch(cmd);
+////				if (result) {
+////					setQuick(false);
+////				} else {
+////					// Notification.show("Quick Action Failed");
+////				}
+//
+//			}
+//		});
+
+		quickText.addValueChangeListener(value -> {
+			quickText.setEnabled(false);
+			String cmd = value.getValue();
+			quickText.clear();
+//			boolean result = quickManager.despatch(cmd);
+//			if (result) {
+//				setQuick(false);
+//			} else {
+//				Notification.show("Quick Action Failed");
+//			}
+
+		});
+
+	}
+
+	public void setQuick(boolean quick) {
+
+		UI.getCurrent().access(new Runnable() {
+			public void run() {
+
+				if (quick) {
+					quickText.setVisible(true);
+					quickText.focus();
+
+					toolbarHomeBtn.setVisible(false);
+					toolbarMenuBtn.setVisible(false);
+
+					if (!isHomeView()) {
+						toolbarBackBtn.setVisible(false);
+					}
+					pageName.setVisible(false);
+					toolbarStyleBtn.setVisible(false);
+				} else {
+					quickText.setVisible(false);
+					quickText.clear();
+
+					toolbarHomeBtn.setVisible(true);
+					toolbarMenuBtn.setVisible(true);
+					if (!isHomeView()) {
+						toolbarBackBtn.setVisible(true);
+					}
+
+					pageName.setVisible(true);
+					toolbarStyleBtn.setVisible(true);
+				}
+
+			}
+		});
+
+	}
+
+	private void createMenuButtons() {
+		
+//		qUI.getEntityMenuList();
+		
+		overlay.getEntity()
+;
+		ArrayList<String> buttonCaptions = new ArrayList<>();
+
+		for (QViewFactory viewFactory : viewFactories.values()) {
+
+			String parent = viewFactory.getParent();
+
+			if (parent == null || parent.isEmpty()) {
+				continue;
+			}
+
+			if (viewFactory.getParent().equals(viewName)) {
+
+				String val = viewFactory.getButtonCaption() + ":" + viewFactory.getViewName();
+				buttonCaptions.add(val);
+
+			}
+		}
+
+		if (!buttonCaptions.isEmpty()) {
+
+			Collections.sort(buttonCaptions);
+
+			int buttonCount = 0;
+
+			for (String val : buttonCaptions) {
+
+				String[] parts = val.split(":");
+
+//			
+//		}
+//
+////		for (QViewFactory viewFactory : viewFactories.values()) {
+////
+////			String parent = viewFactory.getParent();
+////
+////			if (parent == null || parent.isEmpty()) {
+////				continue;
+////			}
+////
+////			if (viewFactory.getParent().equals(viewName)) {
+//
+				Button button = new Button(parts[0]);
+				button.setData(parts[1]);
+				button.setWidth("100%");
+
+				button.addStyleName("left-text");
+				button.addStyleName(ValoTheme.BUTTON_BORDERLESS);
+
+				button.addClickListener(click -> {
+					((QUI) UI.getCurrent()).showView(parts[1]);
+				});
+
+				if (menuLayout == null) {
+					menuLayout = new VerticalLayout();
+					menuLayout.setWidth("100%");
+				}
+
+				if (buttonCount < 1) {
+					Label menuName = new Label();
+
+					String buttonCaption = parentFactory.getButtonCaption();
+
+					if (buttonCaption.length() > 10) {
+						buttonCaption = buttonCaption.substring(0, 4) + "...";
+					}
+
+					String labelValue = "<h2 style=\"padding-left: 15px;\"><span style=\"color: #000000;\"><strong>"
+							+ buttonCaption + "</strong></span></h2>";
+					menuName.setWidth("100%");
+					menuName.setContentMode(ContentMode.HTML);
+
+					menuName.setValue(labelValue);
+					menuLayout.addComponent(menuName);
+				}
+
+				menuLayout.addComponent(button);
+				buttonCount++;
+			}
+		}
+
+		if (menuLayout == null) {
+			toolbarMenuBtn.setEnabled(false);
+		} else {
+			toolbarMenuBtn.setEnabled(true);
+		}
+
+	}
+
+	@Override
+	public void removeView(String viewName) {
+
+		Iterator<com.vaadin.ui.Component> it = menuLayout.iterator();
+
+		while (it.hasNext()) {
+			com.vaadin.ui.Component component = (com.vaadin.ui.Component) it.next();
+			if (component instanceof Button) {
+				Button btn = (Button) component;
+				if (btn.getData() == viewName) {
+					menuLayout.removeComponent(btn);
+				}
+			}
+		}
+//		menuStack.remove(viewName);
+	}
+
+	@Override
+	public void setQUI(QUI qUI) {
+		this.qUI = qUI;
+
+	}
+
+//	@Override
+//	public QEntity getEntity() {
+////		if (qUI == null || lockerPath == null) {
+////			return null;
+////		}
+//		
+//		idx = qUI.getIdx();
+////		lockerPath = qUI.getEntityLockerPath();
+//		entity = entityFactory.getEntity(idx);
+//		return entity;
+//	}
+
+//	@Override
+//	public void setLockerPath(Path lockerPath) {
+//		this.lockerPath = lockerPath;
+//	}
+
+	@Override
+	public void setIdx(Integer idx) {
+		this.idx = idx;
+
+	}
+
+	@Override
+	public void browserWindowResize(int width, int height) {
+		newBrowserWidth = width;
+		newBrowserHeight = height;
+		overlay.browserWindowResize();
+	}
+
+	@Override
+	public int getBrowserWidth() {
+		return newBrowserWidth;
+	}
+
+	@Override
+	public int getBrowserHeight() {
+		return newBrowserHeight;
+	}
+
+//	@Override
+//	public void doViewInstanceSetup(QUI qUI, QViewInstance qViewLocal) {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//
+//	@Override
+//	public void addOverlay(QViewInstance viewInstance) {
+//		// TODO Auto-generated method stub
+//		
+//	}
+
+}

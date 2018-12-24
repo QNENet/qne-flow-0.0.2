@@ -1,0 +1,43 @@
+package net.qnenet.qSiteUser.provider.toolbarBase;
+
+import java.util.Dictionary;
+import java.util.Map;
+
+import org.osgi.service.component.ComponentFactory;
+import org.osgi.service.component.ComponentInstance;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
+import net.qnenet.qLogging.api.QLog;
+import net.qnenet.qMasterSite.api.toolbarBase.QVToolbarBase;
+import net.qnenet.qMasterSite.api.toolbarBase.QViewToolbarBaseFactory;
+
+@Component(immediate = true)
+public class QViewToolbarBaseFactoryImpl implements QViewToolbarBaseFactory {
+
+	@Reference(target = "(Component.factory=qViewToolbarBase)")
+	private ComponentFactory factory;
+
+	@Reference
+	QLog qLog;
+
+	@Activate
+	void activate(Map<String, Object> map) {
+		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+		qLog.logDeactivate(this);
+	}
+
+	@Override
+	public QVToolbarBase getInstance(Dictionary<String, Object> props) {
+		ComponentInstance instance = factory.newInstance(props);
+		return (QVToolbarBase) instance.getInstance();
+	}
+
+
+}

@@ -1,0 +1,512 @@
+package net.qnenet.qUtils.network;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.SocketException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+//import net.diderot.core.utils.arrays.ArrayUtils;
+//import sun.print.resources.serviceui;
+
+public class NetworkUtils {
+
+//	static final Logger LOG = LoggerFactory.getLogger(NetworkUtils.class);
+
+// local IP Addresses
+//	10.0.0.0 - 10.255.255.255
+//	172.16.0.0 - 172.31.255.255
+//	192.168.0.0 - 192.168.255.255
+
+	private static final int High = 59999;
+	private static final int Low = 20000;
+	static Random random = new Random();
+
+	public static Map<String, String> getInfo(String infoUrl) throws IOException {
+
+		ArrayList<String> r = getUrlLines(infoUrl);
+		// String[] r1 = r.get(0).split(",");
+
+		for (String string : r) {
+			System.out.println(string);
+		}
+
+		return null;
+	}
+
+	public static String getInternalAddress() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static String getExternalAddress() {
+		ArrayList<String> scooterLines = null;
+		try {
+			scooterLines = getUrlLines("http://scooterlabs.com/echo");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// System.out.println(ArrayUtils.stringArrayListToString(scooterLines));
+		return getExternalAddressFromScooterLines(scooterLines);
+	}
+
+	private static String getExternalAddressFromScooterLines(ArrayList<String> scooterLines) {
+		for (String inputLine : scooterLines) {
+			// System.out.println(inputLine);
+			if (inputLine.indexOf(" [client_ip]") > 0) {
+				int x = inputLine.indexOf("=>");
+				return inputLine.substring(x + 2).trim();
+			}
+		}
+		return null;
+	}
+
+	private static ArrayList<String> getUrlLines(String urlStr) throws IOException {
+		ArrayList<String> lines = new ArrayList<>();
+		URL url = new URL(urlStr);
+		URLConnection connection = url.openConnection();
+		try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+			String inputLine = null;
+			while ((inputLine = in.readLine()) != null) {
+				lines.add(inputLine);
+			}
+		}
+		return lines;
+
+	}
+
+	public static Integer getFreePort() {
+
+//		return 44912;
+		int count = 0;
+		while (count < 1000) {
+			int possiblePort = random.nextInt(High - Low) + Low;
+			if (isPortAvailable(possiblePort)) {
+				return possiblePort;
+			}
+			count++;
+		}
+		return null;
+	}
+
+	private static boolean isPortAvailable(int port) {
+		try (ServerSocket s = new ServerSocket(port)) {
+			return true;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	public static Integer getRandomPin(int high, int low) {
+		int count = 0;
+		while (count < 200) {
+			int possiblePin = random.nextInt(High - Low) + Low;
+			if (testPin(possiblePin)) {
+				return possiblePin;
+			}
+			count++;
+		}
+		return null;
+	}
+
+	private static boolean testPin(int possiblePin) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	/**
+	 * Get IP address from first non-localhost interface
+	 * 
+	 * @param ipv4 true=return ipv4, false=return ipv6
+	 * @return address or empty string
+	 */
+	public static String getIPAddress() {
+		try {
+
+			String hostAddress = InetAddress.getLocalHost().getHostAddress();
+			String hostName = InetAddress.getLocalHost().getHostName();
+
+			System.out.println("hostAddress = " + hostAddress);
+			System.out.println("hostName = " + hostName);
+
+			List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+
+			for (NetworkInterface intf : interfaces) {
+
+				if (intf.isUp()) {
+
+					System.out.println("\n==============================\nintf name = " + intf.getName());
+					System.out.println("intf display name = " + intf.getDisplayName());
+
+					byte[] hdwAddr = intf.getHardwareAddress();
+					if (hdwAddr != null) {
+
+						String macAddrStr = getMACAddressAsString(hdwAddr);
+
+						System.out.println("mac address = " + macAddrStr);
+					}
+
+					List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+					for (InetAddress addr : addrs) {
+
+						System.out.println("\nCanonicalHostName = " + addr.getCanonicalHostName());
+						System.out.println("HostAddress = " + addr.getHostAddress());
+						System.out.println("HostName = " + addr.getHostName());
+
+						// addr.
+						String addr1 = addr.getCanonicalHostName();
+
+						// if (addr1 != null) {
+						//
+						// String addr1Str = ipv6toCompressedForm(addr1);
+
+						System.out.println("Address = " + addr1);
+						// }
+
+						if (addr.isLoopbackAddress()) {
+							System.out.println("isLoopbackAddress");
+						}
+
+						if (addr.isAnyLocalAddress()) {
+							System.out.println("isAnyLocalAddress");
+						}
+
+						if (addr.isLinkLocalAddress()) {
+							System.out.println("isLinkLocalAddress");
+						}
+
+						if (addr.isSiteLocalAddress()) {
+							System.out.println("isSiteLocalAddress");
+						}
+
+						if (addr.isMCGlobal()) {
+							System.out.println("isMCGlobal");
+						}
+
+						if (addr.isMCLinkLocal()) {
+							System.out.println("isMCLinkLocal");
+						}
+
+						if (addr.isMCNodeLocal()) {
+							System.out.println("isMCNodeLocal");
+						}
+
+						if (addr.isMCOrgLocal()) {
+							System.out.println("isMCOrgLocal");
+						}
+
+						if (addr.isMCSiteLocal()) {
+							System.out.println("isMCSiteLocal");
+						}
+
+						if (addr.isMulticastAddress()) {
+							System.out.println("isMulticastAddress");
+						}
+						//
+						//
+						// // } else if (addr.isReachable(timeout)) {
+						// // } else if (addr.isReachable(netif, ttl, timeout)) {
+						// // }
+						// //
+						// // String sAddr = addr.getHostAddress().toUpperCase();
+						// // boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr);
+						// // if (useIPv4) {
+						// // if (isIPv4)
+						// // return sAddr;
+						// // } else {
+						// // if (!isIPv4) {
+						// // int delim = sAddr.indexOf('%'); // drop ip6 port suffix
+						// // return delim<0 ? sAddr : sAddr.substring(0, delim);
+						// // }
+						// // }
+						// // }
+					}
+				}
+			}
+		} catch (Exception ex) {
+			// for now eat exceptions
+		}
+
+		return "";
+	}
+
+	private static final char[] ipv6conseqZeroFiller = { ':', ':' };
+	private static final char ipv6hextetSeparator = ':';
+
+	public static String ipv6toCompressedForm(byte[] src) {
+		assert src.length == 16;
+		// Find the longest sequence of 0's
+		int cmprHextet = -1; // start of compressed region (hextet index)
+		int cmprSize = 0; // length of compressed region
+		for (int hextet = 0; hextet < 8;) {
+			int curByte = hextet * 2;
+			int size = 0;
+			while (curByte < src.length && src[curByte] == 0 && src[curByte + 1] == 0) {
+				curByte += 2;
+				size++;
+			}
+			if (size > cmprSize) {
+				cmprHextet = hextet;
+				cmprSize = size;
+			}
+			hextet = (curByte / 2) + 1;
+		}
+		if (cmprHextet == -1 || cmprSize < 2) {
+			// No compression can be applied
+			return ipv6toStr(src);
+		}
+		StringBuilder sb = new StringBuilder(39);
+		ipv6toStr(sb, src, 0, cmprHextet);
+		sb.append(ipv6conseqZeroFiller);
+		ipv6toStr(sb, src, cmprHextet + cmprSize, 8);
+		return sb.toString();
+	}
+
+	/*
+	 * Convert numeric IPv6 to standard (non-compressed) format.
+	 * 
+	 * Borrowed from Inet6Address.java #numericToTextFormat(byte[]) Changed
+	 * StringBuffer -> StringBuilder and ":" -> ':' for performance.
+	 */
+	public static String ipv6toStr(byte[] src) {
+		assert src.length == 16;
+		StringBuilder sb = new StringBuilder(39);
+		ipv6toStr(sb, src, 0, 8);
+		return sb.toString();
+	}
+
+	private static final void ipv6toStr(StringBuilder sb, byte[] src, int fromHextet, int toHextet) {
+		for (int i = fromHextet; i < toHextet; i++) {
+			sb.append(Integer.toHexString(((src[i << 1] << 8) & 0xff00) | (src[(i << 1) + 1] & 0xff)));
+			if (i < toHextet - 1) {
+				sb.append(ipv6hextetSeparator);
+			}
+		}
+	}
+
+	public static String getMACAddressAsString(byte[] mac) {
+		StringBuilder buf = new StringBuilder();
+		for (int idx = 0; idx < mac.length; idx++)
+			buf.append(String.format("%02X:", mac[idx]));
+		if (buf.length() > 0)
+			buf.deleteCharAt(buf.length() - 1);
+		return buf.toString();
+	}
+
+	/**
+	 * Returns MAC address of the given interface name.
+	 * 
+	 * @param interfaceName eth0, wlan0 or NULL=use first interface
+	 * @return mac address or empty string
+	 */
+	public static String getMACAddress(String interfaceName) {
+		try {
+			List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+			for (NetworkInterface intf : interfaces) {
+				if (interfaceName != null) {
+					if (!intf.getName().equalsIgnoreCase(interfaceName))
+						continue;
+				}
+				byte[] mac = intf.getHardwareAddress();
+				if (mac == null)
+					return "";
+				StringBuilder buf = new StringBuilder();
+				for (int idx = 0; idx < mac.length; idx++)
+					buf.append(String.format("%02X:", mac[idx]));
+				if (buf.length() > 0)
+					buf.deleteCharAt(buf.length() - 1);
+				return buf.toString();
+			}
+		} catch (Exception ex) {
+		} // for now eat exceptions
+		return "";
+		/*
+		 * try { // this is so Linux hack return loadFileAsString("/sys/class/net/"
+		 * +interfaceName + "/address").toUpperCase().trim(); } catch (IOException ex) {
+		 * return null; }
+		 */
+	}
+
+//	public static Map<String, String> getIpAddressInfo() {
+//		Map<String, String> result = new HashMap<String, String>();
+//
+//		Enumeration<NetworkInterface> networkInterfaces;
+//		try {
+//			networkInterfaces = NetworkInterface.getNetworkInterfaces();
+//			
+//			while (networkInterfaces.hasMoreElements()) {
+//				
+//				NetworkInterface networkInterface = (NetworkInterface) networkInterfaces.nextElement();
+//				
+//				Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+//				
+//				while (inetAddresses.hasMoreElements()) {
+//					
+//					InetAddress inetAddr = (InetAddress) inetAddresses.nextElement();
+//					// inetAddr.getAddress();
+//					System.out.println("CanonicalHostName = " + inetAddr.getCanonicalHostName());
+//					System.out.println("HostAddress = " + inetAddr.getHostAddress());
+//					System.out.println("HostName = " + inetAddr.getHostName());
+//
+//					// i.getLocalHost();
+//					System.out.println(inetAddr.getHostAddress());
+//					System.out.println(inetAddr.getLocalHost());
+//					System.out.println(inetAddr.getLocalHost().getHostName());
+//
+//				}
+//				System.out.println("");
+//				System.out.println("");
+//
+//			}
+//		} catch (SocketException | UnknownHostException e2) {
+//			// TODO Auto-generated catch block
+//			e2.printStackTrace();
+//		}
+//		
+//		System.out.println("");
+//		System.out.println("");
+//		System.out.println("");
+//		System.out.println("");
+//
+//		// Java 1.6+ code
+//		LOG.info("Network interfaces: ");
+//
+//		// log("LVPMU (L)oopback (V)irtual (P)ointToPoint (M)multicastSupport (U)p");
+//		LOG.info("LVPMU");
+//
+//		try {
+//			for (Enumeration e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();) {
+//				NetworkInterface n = (NetworkInterface) e.nextElement();
+//				char[] flags = { '-', '-', '-', '-', '-' };
+//
+//				byte[] hdwAddr = n.getHardwareAddress();
+//
+//				if (hdwAddr != null) {
+//					String hex = ConverterUtils.bytesToHex(hdwAddr);
+//					LOG.info(" mac addr = " + hex);
+//				}
+//
+//				if (n.isLoopback())
+//					flags[0] = 'x';
+//
+//				if (n.isVirtual())
+//					flags[1] = 'x';
+//				if (n.isPointToPoint())
+//					flags[2] = 'x';
+//
+//				if (n.supportsMulticast())
+//					flags[3] = 'x';
+//
+//				if (n.isUp())
+//					flags[4] = 'x';
+//
+//				String neti = new String(flags) + "   " + n.getName() + "\t";
+//
+//				for (Enumeration i = n.getSubInterfaces(); i.hasMoreElements();) {
+//					NetworkInterface s = (NetworkInterface) i.nextElement();
+//					neti += " [" + s.getName() + "]";
+//				}
+//				LOG.info(neti + " -> " + n.getDisplayName());
+//				List i = n.getInterfaceAddresses();
+//				if (!i.isEmpty()) {
+//					for (int x = 0; x < i.size(); x++) {
+//						InterfaceAddress a = (InterfaceAddress) i.get(x);
+//						LOG.info("        " + a.toString());
+//					}
+//				}
+//			}
+//		} catch (SocketException e) {
+//			// Ignore
+//		}
+//		return result;
+//	}
+
+	// check 20180417..seems wikipedia now does not contain GeoIP info
+	// public static String[] getGeoIpGuess() {
+	//
+	// URL obj;
+	// URLConnection conn = null;
+	// try {
+	// obj = new URL("http://www.wikipedia.org");
+	// conn = obj.openConnection();
+	// } catch (MalformedURLException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	//
+	// if (conn == null) {
+	// return null;
+	// }
+	//
+	// // get all headers
+	// Map<String, List<String>> map = conn.getHeaderFields();
+	// // for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+	// List<String> cookies = map.get("Set-Cookie");
+	//
+	// String[] a1 = null;
+	// for (String cookie : cookies) {
+	// if (cookie.contains("GeoIP")) {
+	// a1 = cookie.split(";");
+	// break;
+	// }
+	// }
+	//
+	// String[] result = null;
+	// for (String v2 : a1) {
+	// if (v2.toLowerCase().startsWith("geoip=")) {
+	// result = v2.split(":");
+	// result[0] = result[0].substring(6);
+	//
+	// return result;
+	// }
+	// }
+	// return result;
+	// }
+
+	private static void setWindowsLanIPAddr(String addr) throws IOException {
+		// String str1="192.168.0.201";
+		String str2 = "255.255.255.0";
+		String[] command1 = { "netsh", "interface", "ipv4", "set", "address", "name=", "Local Area Connection",
+				"source=static", "addr=", addr, "mask=", str2 };
+		// Process pp = java.lang.Runtime.getRuntime().exec(command1);
+		java.lang.Runtime.getRuntime().exec(command1);
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		// getIpAddressInfo();
+
+		getIPAddress();
+
+		// String[] r = getGeoIpGuess();
+		//
+		// System.out.println(r);
+		// NetworkUtils.getInfo("http://58.161.64.226:8080/info");
+
+		// NetworkUtils.setLanIPAddr("192.168.1.62");
+	}
+
+}

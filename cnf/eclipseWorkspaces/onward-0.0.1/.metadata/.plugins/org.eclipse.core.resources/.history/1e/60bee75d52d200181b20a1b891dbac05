@@ -1,0 +1,348 @@
+package net.qnenet.qEntityNetwork.provider.server.handlers;
+
+import java.util.List;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.ShortBufferException;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import net.qnenet.qBaseNTOs.api.entities.NTOGetNewGlobalEntityId;
+import net.qnenet.qEntityNetwork.provider.server.server.QNetworkServerImpl;
+import net.qnenet.qNetworkClasses.QChannel;
+import net.qnenet.qNetworkClasses.QEntity;
+import net.qnenet.qNetworkClasses.QMessageEnvelope;
+import net.qnenet.qNetworkClasses.QNetworkObject;
+import net.qnenet.qSecurityUtils.api.p1.CipherState;
+import net.qnenet.qSecurityUtils.api.p1.CipherStatePair;
+import net.qnenet.qSecurityUtils.api.p1.Curve25519DHState;
+import net.qnenet.qSecurityUtils.api.p1.HandshakeState;
+
+
+public class ServerChannel extends ByteToMessageDecoder implements QChannel {
+
+	private String name = "Server Decoder";
+
+	private static final int HANDSHAKE = 1;
+	private static final int TRANSPORT = 2;
+
+	private static final int WORK_BUFFER_SIZE = 65535;
+
+	private static final int MESSAGE_MAX_SIZE = 65507 - 16;
+
+	// private static final int MAX_MESSAGE_CONTENT_SIZE = 63 * 1024;
+
+	private int mode;
+	private HandshakeState handshake;
+
+	private byte[] workBuf = new byte[WORK_BUFFER_SIZE];
+
+	private int handshakeBufIdx = 4;
+
+//	private ChannelHandlerContext channelHandlerContext;
+
+	private CipherStatePair pair;
+//	private long destinationGlobalId;
+//	private boolean firstRead;
+
+//	private QChannelApi qChannel;
+
+	private ChannelPipeline pipeline;
+
+	private Channel channel;
+
+//	private NoiseProtocol noiseProtocol;
+//	private QNESecrets secrets;
+
+//	private QNetworkServerImpl parentQServer;
+	
+	private QEntity qEntity;
+
+//	private ChannelHandlerContext ctx;
+
+//	public ServerDecoder(NoiseProtocol noiseProtocol, QNESecrets secrets) {
+//		this.noiseProtocol = noiseProtocol;
+//		this.secrets = secrets;
+//	}
+
+	public ServerChannel(QEntity qEntity) {
+		this.qEntity = qEntity;
+	}
+
+	public boolean say(String message) {
+		System.out.println(name + ":" + message);
+		return false;
+	}
+
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		super.channelActive(ctx);
+
+		channel = ctx.channel();
+
+		System.out.println(name + " -> " + ctx.channel().id() + " Channel Active");
+
+		this.mode = HANDSHAKE;
+
+		handshake = qEntity.getNoiseProtocol().createHandshakeState("Noise_XX_25519_ChaChaPoly_BLAKE2b", HandshakeState.RESPONDER);
+
+		Curve25519DHState staticKeypair = new Curve25519DHState();
+		staticKeypair.setKeyPair(qEntity.getPrivateKeyClone(), qEntity.getPublicKeyClone());
+		handshake.setLocalKeyPair(staticKeypair);
+//		secrets.makeSafe();
+
+		handshake.start();
+
+		say("\n\nSercver ==================SERVER START HANDSHAKE====================\n\n");
+
+		if (handshake.getAction() == HandshakeState.WRITE_MESSAGE) {
+			int size;
+			try {
+				size = handshake.writeMessage(workBuf, handshakeBufIdx, null, 0, 0);
+				sendHandshakeBuf(ctx, size);
+			} catch (ShortBufferException e) {
+//					LOG.info("Close Initiator Pipe :: ShortBufferException -> " + e.getMessage());
+				say("Close Initiator Pipe :: ShortBufferException -> " + e.getMessage());
+				handlerDestroyChannel();
+				// e.printStackTrace();
+			}
+		}
+
+	}
+
+	private void sendHandshakeBuf(ChannelHandlerContext ctx, int size) {
+		ByteBuf outBuf = Unpooled.wrappedBuffer(workBuf, 0, size + 4);
+		outBuf.setInt(0, size + 4);
+		System.out.println(name + " SEND -> " + outBuf.readableBytes());
+		ctx.writeAndFlush(outBuf);
+	}
+
+	@Override
+	protected void decode(ChannelHandlerContext ctx, ByteBuf bb, List<Object> out) throws Exception {
+
+		System.out.println(name + " -> " + ctx.channel().id() + " Readable Bytes <<-- " + bb.readableBytes());
+
+		if (bb.readableBytes() < 4) {
+			return;
+		}
+
+		final int length = bb.getInt(0);
+		if (bb.readableBytes() < length) {
+			return;
+		}
+		
+
+		if (mode == HANDSHAKE) {
+
+		int size = bb.readInt() - 4;
+
+		ByteBuf msgBB = bb.readBytes(size);
+
+		System.out.println(name + " RECEIVE -> " + size);
+
+//		out.add(bb);
+
+		System.out.println(name + " mode -> " + mode);
+		System.out.println(name + " -> " + ctx.channel().id() + " Readable Bytes <<-- " + msgBB.readableBytes());
+
+//		if (mode == HANDSHAKE) {
+
+			if (handshake.getAction() == HandshakeState.READ_MESSAGE) {
+				// int inSize = bb.readInt();
+//				bb.resetReaderIndex();
+
+				byte[] message = new byte[msgBB.readableBytes()];
+				msgBB.readBytes(message);
+				try {
+					handshake.readMessage(message, 0, message.length, workBuf, handshakeBufIdx);
+				} catch (ShortBufferException e) {
+					System.out.println(name + " -> Short buffer error");
+					e.printStackTrace();
+				} catch (BadPaddingException e) {
+					System.out.println(name + " -> Bad padding error");
+					e.printStackTrace();
+				}
+
+				afterRead(ctx);
+			}
+			
+		} else if (mode == TRANSPORT) {
+			
+			System.out.println("TRANSPORT");
+			System.out.println("Channel Read <<-- " + ctx.channel().id() + " Readable Bytes -> " + bb.readableBytes());
+
+			byte[] message = new byte[bb.readableBytes()];
+
+			bb.readBytes(message);
+
+			CipherState cipherStateReceiver = pair.getReceiver();
+			int size;
+			ByteBuf byteBuf = null;
+			try {
+				size = cipherStateReceiver.decryptWithAd(null, message, 0, workBuf, 0, message.length);
+				byteBuf = Unpooled.wrappedBuffer(workBuf, 0, size);
+			} catch (ShortBufferException | BadPaddingException e) {
+				System.out.println("Server Channel read message error");
+				e.printStackTrace();
+			}
+
+
+			QMessageEnvelope envelope = QMessageEnvelope.fromByteBuf(bb);
+			
+			long fromId = envelope.fromId;
+
+			QNetworkObject obj = (QNetworkObject) qEntity.getSerialization().fromBytes(envelope.contentBytes);
+
+
+			if (fromId == 0) {  // request for new entityId
+				NTOGetNewGlobalEntityId nto = (NTOGetNewGlobalEntityId) obj;
+				fromId = qEntity.getAndAddNewId(nto.ipV4Addr);
+				nto.entityId = fromId;
+				envelope.contentBytes = qEntity.getSerialization().toBytes(nto);
+				envelope.fromId = fromId;
+			}
+			
+			obj.doResponseAction(qEntity, ctx.channel(), envelope);
+			
+			qEntity.getNetwork().putServerChannel(fromId, ctx.channel());
+		}
+	}
+
+	private void afterRead(ChannelHandlerContext ctx) {
+
+		int action = handshake.getAction();
+		switch (action) {
+
+		case HandshakeState.WRITE_MESSAGE:
+			int size;
+			try {
+				size = handshake.writeMessage(workBuf, handshakeBufIdx, null, 0, 0);
+				sendHandshakeBuf(ctx, size);
+			} catch (ShortBufferException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			afterWrite();
+			break;
+
+		case HandshakeState.SPLIT:
+			System.out.println(name + " -> SPLIT");
+
+			pair = handshake.split();
+
+			if (handshake.getAction() == HandshakeState.COMPLETE) {
+				mode = TRANSPORT;
+				handshakeFinished();
+			} else {
+				System.out.println(name + " -> Handshake FAILED");
+			}
+			break;
+
+		case HandshakeState.FAILED:
+			System.out.println(name + " -> Handshake FAILED");
+			handlerDestroyChannel();
+			break;
+		}
+
+	}
+
+	private void afterWrite() {
+		switch (handshake.getAction()) {
+
+		case HandshakeState.SPLIT:
+			System.out.println(name + " -> SPLIT");
+
+			pair = handshake.split();
+
+			if (handshake.getAction() == HandshakeState.COMPLETE) {
+				System.out.println(name + " -> COMPLETE");
+				mode = TRANSPORT;
+				handshakeFinished();
+				return;
+			}
+			break;
+		case HandshakeState.FAILED:
+			System.out.println(name + " -> Handskae FAILED");
+			handlerDestroyChannel();
+			break;
+
+		case HandshakeState.READ_MESSAGE:
+			break;
+		}
+
+	}
+
+	// After HANDSHAKE
+	// =======================================================================================
+
+	private void handshakeFinished() {
+
+		say("\n\n Server ==================SERVER HANDSHAKE FINISHED====================\n\n");
+
+//		parentQServer.processQueuedMessages();
+
+//		pipeline.addLast(new InboundChunking());
+//		pipeline.addLast(new OutboundChunking());
+//		pipeline.addLast(new NTOHandler());
+//		pipeline.remove(this);
+
+	}
+
+	@Override
+	public void sendEncryptedBytes(byte[] bytes) {
+
+		CipherState cipherStateSender = pair.getSender();
+
+		int size = 0;
+		try {
+			size = cipherStateSender.encryptWithAd(null, bytes, 0, workBuf, 0, bytes.length);
+		} catch (ShortBufferException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		int totalSize = size + 4;
+		ByteBuf resultBuf = Unpooled.buffer(totalSize);
+		resultBuf.writeInt(totalSize);
+		resultBuf.writeBytes(workBuf, 0, size);
+
+		System.out.println("MESSAGE Readable Bytes -->> " + resultBuf.readableBytes());
+
+		channel.writeAndFlush(resultBuf);
+
+		System.out.println("MESSAGE SENT -->> " + channel.id());
+
+	}
+
+	public void handlerDestroyChannel() {
+
+		if (handshake != null) {
+			handshake.destroy();
+		}
+
+//		qNetworkChannel.destroyChannel();
+
+//			if (group != null) {
+//				group.shutdownGracefully();
+//			}
+//
+//			deleteQueuedMessages();
+//
+//			config.delete();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+
+	}
+
+	public boolean isTransportMode() {
+		return mode == TRANSPORT;
+	}
+
+}

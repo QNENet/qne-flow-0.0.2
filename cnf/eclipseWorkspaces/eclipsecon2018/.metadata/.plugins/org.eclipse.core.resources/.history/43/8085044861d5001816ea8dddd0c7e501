@@ -1,0 +1,45 @@
+package net.qnenet.qSiteUser.api.view;
+
+import net.qnenet.ecSite2018.api.QUI;
+import net.qnenet.ecSite2018.api.toolbarBase.QVToolbarBase;
+import net.qnenet.ecSite2018.provider.ui.QSiteUserImpl;
+
+public interface QViewInstance {
+
+
+//	void setUp(QVBase100 baseView);
+//
+//	void setParentFactory(QViewFactory parentFactory);
+//
+
+//	void enter(QUI qUI);
+
+//	void setUp(QUI qUI, QVToolbarBase toolbarBase, QViewFactory viewFactory);
+
+//	void setUp2();
+
+	QViewFactory getParentFactory();
+
+	void enter();
+
+	void exit();
+
+	void setupNavPanels();
+
+	void backNavBtnClicked(int currentNavSetIdx);
+
+	void nextNavBtnClicked(int currentNavSetIdx);
+
+	void browserWindowResize();
+
+	void setUp(QUI qUI, QVToolbarBase baseView, QViewFactory viewFactory);
+
+//	void setUp(QVToolbarBase baseView, QViewFactory viewFactory);
+
+//	void setUp(QUI qUI, QVToolbarBase view, QViewFactory viewFactory);
+
+	
+//	void setUpInstance(QViewInstance qViewQNENetHomePageImpl);
+
+
+}

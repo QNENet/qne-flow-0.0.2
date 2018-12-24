@@ -1,0 +1,92 @@
+package net.qnenet.qSiteUser.api;
+
+import java.util.Dictionary;
+import java.util.List;
+import java.util.Stack;
+
+import org.osgi.annotation.versioning.ProviderType;
+
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.Window;
+
+import net.qnenet.qNetworkClasses.QEntity;
+import net.qnenet.qSiteUser.api.toolbarBase.QVToolbarBase;
+
+
+
+
+/**
+ * <p>
+ * This is an example of an interface that is expected to be implemented by Providers of the API. Adding methods to this
+ * interface is a minor change, because only Providers will be affected.
+ * </p>
+ * 
+ * @see ProviderType
+ * @since 1.0
+ */
+@ProviderType
+public interface QUI {
+	
+
+	void showView(String viewName);
+
+	void hideView(String viewName);
+	
+	void stopViewBundle(String viewName);
+	
+	void uninstallViewBundle(String viewName);
+
+	void addWindow(Window window);
+
+	void showHomeView();
+
+	Stack<String> getMenuStack();
+
+	Window getMenu();
+
+	String getHomeView();
+
+	void closeWindow(Object windowData);
+
+	Window createDisplayWindow();
+
+	void hideDisplayWindow();
+
+	void showDisplayWindow();
+
+	void displayWindowShow(String width, String height, String style, Panel newPanel);
+
+	void setHomeView(String string);
+
+//	void setEntityLockerPath(Path lockerPath);
+//
+//	Path getEntityLockerPath();
+
+	void setIdx(Integer idx);
+
+	Integer getIdx();
+
+//	QVToolbarBase getViewInstance(String viewName);
+
+	QVToolbarBase getViewInstance(String viewName, Dictionary<String, Object> props);
+
+	QVToolbarBase getViewInstance(String viewName);
+
+	QEntity getEntity();
+
+
+
+//	QVToolbarBase getViewInstance(String viewName);
+
+//	QVToolbarBase getViewInstance(String string);
+
+//	QVToolbarBase getViewInstance(String viewName, Map<String, Object> props);
+
+//	QVToolbarBase getViewInstance(String viewName, Dictionary<String, Object> props);
+
+
+//	void clearWindows(); // what about menu !
+
+
+//	QViewInstance getViewInstanceByName(String viewName);
+}

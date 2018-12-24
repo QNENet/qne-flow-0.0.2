@@ -1,0 +1,74 @@
+package net.qnenet.qSiteUser.provider;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+
+import net.qnenet.qLogging.api.QLog;
+import net.qnenet.qSiteUser.api.view.QViewFactory;
+import net.qnenet.qSiteUser.api.view.QViewRegister;
+
+@Component(immediate = true)
+public class QViewRegisterImpl implements QViewRegister {
+
+	@Reference
+	QLog qLog;
+
+	Map<String, QViewFactory> qViewFactories = new ConcurrentHashMap<>();
+
+	@Activate
+	void activate(Map<String, Object> map) {
+		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+		qLog.logDeactivate(this);
+	}
+
+	@Override
+	public Map<String, QViewFactory> getQViews() {
+		return qViewFactories;
+	}
+
+	@Override
+	public QViewFactory getViewFactory(String viewName) {
+		return qViewFactories.get(viewName);
+	}
+
+
+	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+	public void setQViewFactory(ServiceReference<QViewFactory> ref, QViewFactory qViewFactory) {
+
+		String viewName = qViewFactory.getViewName();
+
+		qViewFactories.put(viewName, qViewFactory);
+
+		qLog.info(this, "Register -> " + viewName);
+	}
+
+	public void unsetQViewFactory(ServiceReference<QViewFactory> ref, QViewFactory qViewFactory) {
+
+		String viewName = qViewFactory.getViewName();
+
+		qViewFactories.remove(viewName, qViewFactory);
+
+		qLog.info(this, "UnRegister -> " + viewName);
+
+	}
+	
+	
+	@Override
+	public Map<String, QViewFactory> getViewFactories() {
+		return qViewFactories;
+	}
+
+
+}

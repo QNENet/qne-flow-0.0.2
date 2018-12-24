@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <meta name="design-properties" content="{&quot;RULERS_VISIBLE&quot;:true,&quot;GUIDELINES_VISIBLE&quot;:false,&quot;SNAP_TO_OBJECTS&quot;:true,&quot;SNAP_TO_GRID&quot;:true,&quot;SNAPPING_DISTANCE&quot;:10,&quot;GENERATE_GETTERS&quot;:false,&quot;JAVA_SOURCES_ROOT&quot;:&quot;src&quot;,&quot;THEME&quot;:&quot;valo&quot;}">
+  <meta name="vaadin-version" content="8.1.5">
+ </head>
+ <body>
+  <vaadin-vertical-layout spacing="false" size-full margin="false">
+   <vaadin-panel width="90%" height="90%" _id="localEntitiesPanel" :middle :center :expand>
+    <vaadin-vertical-layout size-full _id="localEntitiesVerticalLayout">
+     <vaadin-text-field description="Enter Global Id in this field" placeholder="Global Id" _id="globalId" :center></vaadin-text-field>
+     <vaadin-text-field description="Enter IP Address in this field" placeholder="IP Address" _id="ipAddress" :center></vaadin-text-field>
+     <vaadin-text-field description="Enter Port in this field" placeholder="Port" _id="port" :center></vaadin-text-field>
+     <vaadin-button icon="fonticon://Vaadin-Icons/e801" plain-text _id="addBtn" :center></vaadin-button>
+     <vaadin-grid size-full _id="localEntitiesGrid" :expand></vaadin-grid>
+     <vaadin-button plain-text _id="testBtn" :bottom :center>
+       Test 
+     </vaadin-button>
+    </vaadin-vertical-layout>
+   </vaadin-panel>
+  </vaadin-vertical-layout>
+ </body>
+</html>

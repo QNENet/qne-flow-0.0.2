@@ -1,0 +1,284 @@
+package net.qnenet.qViewOpenLocker.provider.views;
+
+import java.util.Arrays;
+import java.util.Map;
+
+import org.osgi.service.component.ComponentInstance;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
+import com.vaadin.data.HasValue.ValueChangeEvent;
+import com.vaadin.data.HasValue.ValueChangeListener;
+import com.vaadin.shared.ui.ValueChangeMode;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.declarative.Design;
+
+//import net.qnenet.qEntity.api.entity.QEntity;
+import net.qnenet.qEntity.api.entity.QEntityFactory;
+//import net.qnenet.qEntity.api.QEntity;
+//import net.qnenet.qEntity.api.QEntityFactory;
+import net.qnenet.qLogging.api.QLog;
+import net.qnenet.qNetworkClasses.QEntity;
+import net.qnenet.qSCObjectStore.api.QSCObjectStore;
+import net.qnenet.qSecurityUtils.api.QSecurityUtils;
+import net.qnenet.qSiteUser.api.QComponentFactory;
+import net.qnenet.qSiteUser.api.QUI;
+import net.qnenet.qSiteUser.api.toolbarBase.QVToolbarBase;
+import net.qnenet.qSiteUser.api.view.QViewFactory;
+import net.qnenet.qSiteUser.api.view.QViewInstance;
+import net.qnenet.qSystemInfo.api.QSystemInfo;
+import net.qnenet.qUtils.base36.Base36;
+import net.qnenet.qViewOpenLocker.api.QViewOpenLocker;
+import net.qnenet.qViewOpenLocker.provider.designer.QViewOpenLockerDesign;
+
+@SuppressWarnings("serial")
+@Component(factory = "qViewOpenLocker")
+public class QViewOpenLockerImpl extends QViewOpenLockerDesign implements QViewOpenLocker, QViewInstance {
+
+	static {
+		Design.setComponentFactory(new QComponentFactory());
+	}
+
+	@Reference
+	QLog qLog;
+
+//	@SuppressWarnings("unused")
+//	private QVToolbarBase baseView;
+
+	@Reference
+	QEntityFactory entityFactory;
+
+	@Reference
+	QSystemInfo systemInfo;
+
+	@Reference
+	QSCObjectStore qSCObjectStore;
+
+	@Reference
+	QSecurityUtils securityUtils;
+
+	private QViewFactory parentFactory;
+
+	@SuppressWarnings("unused")
+	private QUI qUI;
+
+	private Window loginKeyWindow;
+
+	private QVToolbarBase baseView;
+
+//	private Path initialLoginKeyPath;
+
+//	private QEntity qEntity;
+
+//private Object failedLogin;
+
+	@Activate
+	void activate(Map<String, Object> map) {
+
+		lockerKey.setValueChangeMode(ValueChangeMode.EAGER);
+		lockerKey.addValueChangeListener(new ValueChangeListener<String>() {
+
+			@Override
+			public void valueChange(ValueChangeEvent<String> event) {
+
+				if (systemInfo.getDebug()) {
+
+					checkLockerKey(systemInfo.getDebugLockerKey());
+
+				} else {
+
+					String value = event.getValue();
+					if (value.contains(" ")) {
+						value = value.replace(" ", "");
+					}
+
+					if (value.length() == 5) {
+						checkLockerKey(value);
+					}
+
+				}
+			}
+		});
+
+		lockerKey.focus();
+
+//		char[] newSystemLoginKey = securityUtils.getNewSystemLoginKey();
+
+//		if (newSystemLoginKey != null) {
+//			loginKeyWindow = createLoginKeyWindow(newSystemLoginKey);
+//			UI.getCurrent().addWindow(loginKeyWindow);
+//		}
+		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+		qLog.logDeactivate(this);
+	}
+
+	@Override
+	public void setUp(QUI qUI, QVToolbarBase baseView, QViewFactory viewFactory) {
+		this.qUI = qUI;
+
+		this.parentFactory = viewFactory;
+
+		this.baseView = baseView;
+
+		baseView.doViewInstanceSetup(qUI, this);
+
+		baseView.addOverlay(this);
+
+	}
+
+	@Override
+	public void clearLockerKey() {
+		lockerKey.clear();
+		lockerKey.focus();
+	}
+
+	@Override
+	public void clearAndFocusLockerKey() {
+		lockerKey.clear();
+		lockerKey.focus();
+	}
+
+	@Override
+	public QViewFactory getParentFactory() {
+		return parentFactory;
+	}
+
+//	@Override
+	public void checkLockerKey(String loginValue) {
+		qUI.closeWindow("loginKeyWindow");
+
+		int loginKeyInt = Base36.qneNameToInt(loginValue);
+
+		if (loginKeyInt < 1800000 || loginKeyInt > 60400000) {
+			failedLogin();
+			return;
+		}
+
+		int virtualLockerId = loginKeyInt / 100000;
+
+		Integer lockerIdx = entityFactory.getLockerIdx(virtualLockerId);
+		if (lockerIdx == null) {
+			failedLogin();
+			return;
+		}
+
+		qUI.setIdx(lockerIdx);
+
+		if (loginKeyWindow != null) {
+			loginKeyWindow.close();
+		}
+
+		char[] loginInChars = String.valueOf(loginKeyInt).toCharArray();
+
+		ComponentInstance entity = entityFactory.openEntity(String.valueOf(loginKeyInt).toCharArray(), lockerIdx);
+		
+//		ComponentInstance entity = entityManager.getInstance(lockerIdx);
+
+		QEntity qEntity = (QEntity) entity.getInstance();
+		if (qEntity.isLoadEntityInfoOK()) {
+			boolean lockerKeyOK = Arrays.equals(loginInChars, qEntity.getLockerKey());
+
+			if (lockerKeyOK) {
+				qUI.showHomeView();
+			} else {
+				failedLogin();
+			}
+			return;
+		}
+
+		entityFactory.removeInstance(entity);
+		entity.dispose();
+		qUI.setIdx(null);
+		failedLogin();
+	}
+
+//	@Override
+	public void failedLogin() {
+
+		qUI.showView("VOpenLockerFail");
+//		if (failedLogin == null) {
+//			failedLogin = failedLoginFactory.getService();
+//			failedLogin.setMainUI(this);
+//			failedLoginCount = 0;
+//		}
+//
+//		failedLoginCount++;
+//
+//		if (failedLoginCount < 3) {
+//			setContent((com.vaadin.ui.Component) failedLogin);
+//		} else {
+//			Page.getCurrent().setLocation("http://qnenet.com");
+//			close();
+//		}
+	}
+
+//	private String html = "<p style=\"text-align: center;\"></p>\r\n"
+//			+ "<p style=\"text-align: center;\">Your Locker Key is</p>\r\n"
+//			+ "<p style=\"text-align: center;\"><span style=\"color: #ff0000;\"><strong>XXX XXX</strong></span></p>\r\n"
+//			+ "<p style=\"text-align: center;\"><span style=\"color: #ffff00; background-color: #000000;\">yyyyyy</span></p>\r\n"
+//			+ "<p style=\"text-align: center;\">This is the last time it will be displayed.</p>\r\n"
+//			+ "<p style=\"text-align: center;\">Write it down and keep private.</p>\r\n"
+//			+ "<p style=\"text-align: center;\">It is the key to access your private data,</p>\r\n"
+//			+ "<p style=\"text-align: center;\">including passwords and other information.</p>";
+//
+//	private Window createLoginKeyWindow(char[] loginKey) {
+//
+////		String key = Base36.longToQNEName(securityUtils.longFromBytes(loginKey)).toUpperCase();
+//
+//		int intKey = Integer.valueOf(new String(loginKey));
+//
+//		String key = Base36.intToQNEName(intKey).toUpperCase();
+//
+//		String str = new StringBuilder(key).insert(2, " ").toString();
+//
+//		html = html.replace("XXX XXX", str);
+//		html = html.replace("yyyyyy", StringUtils.expandDigits(key));
+//
+//		Window window = new Window();
+//		// window.setWidth("300px");
+//		// window.setHeight("200px");
+//		window.center();
+//		VerticalLayout layout = new VerticalLayout();
+//		// layout.setSizeFull();
+//		Label label = new Label();
+//		label.setSizeFull();
+//		label.setContentMode(ContentMode.HTML);
+//		label.setValue(html);
+//		layout.addComponent(label);
+//		window.setContent(layout);
+//		return window;
+//	}
+
+	@Override
+	public void enter() {
+		lockerKey.clear();
+		lockerKey.focus();
+	}
+	
+	@Override
+	public void exit() {
+	}
+
+	@Override
+	public void setupNavPanels() {
+	}
+	
+	@Override
+	public void backNavBtnClicked(int currentNavSetIdx) {
+	}
+
+	@Override
+	public void nextNavBtnClicked(int currentNavSetIdx) {
+	}
+
+	@Override
+	public void browserWindowResize() {
+	}
+
+}

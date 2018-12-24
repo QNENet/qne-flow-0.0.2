@@ -1,0 +1,72 @@
+package net.qnenet.qSiteUser.api.view;
+
+import java.util.Dictionary;
+import java.util.Map;
+
+public interface QViewFactory {
+	
+	String getBaseView();
+
+	String getPrevViewName();
+
+	String getViewName();
+
+	String getNextViewName();
+
+	String getParent();
+
+	String getButtonCaption();
+
+//	QViewInstance createViewOverlayInstance();
+
+	boolean hasToolbar();
+
+	boolean hasNavButtons();
+
+	boolean hasMenu();
+
+	String getBackgroundStyle();
+
+//	QViewInstance getInstance(Dictionary<String, Object> props);
+
+	QViewInstance getInstance(Dictionary<String, Object> props);
+
+//	void setBackgroundStyle(String nextStyle);
+
+//	QViewInstanceLocal getInstance(Dictionary<String, Object> props);
+
+//	ComponentFactory getFactory();
+//	QViewInstanceLocal get
+
+	
+	
+
+
+
+//	String getBaseView();
+//
+//	String getPrevViewName();
+//
+//	String getViewName();
+//
+//	String getNextViewName();
+//
+//	String getParent();
+//
+//	String getButtonCaption();
+//
+//	QViewInstance createViewOverlayInstance();
+//
+//	boolean hasToolbar();
+//
+//	boolean hasNavButtons();
+//
+//	boolean hasMenu();
+//
+//	String getBackgroundStyle();
+
+	
+	
+
+
+}

@@ -1,0 +1,544 @@
+
+package net.qnenet.ecSite2018.provider.ui;
+
+import java.nio.file.Files;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ServiceScope;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
+
+import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.Viewport;
+import com.vaadin.annotations.Widgetset;
+import com.vaadin.server.Page;
+import com.vaadin.server.Page.BrowserWindowResizeEvent;
+import com.vaadin.server.Page.BrowserWindowResizeListener;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.ValoTheme;
+
+import net.qnenet.ecSite2018.api.QUI;
+import net.qnenet.ecSite2018.api.toolbarBase.QVToolbarBase;
+import net.qnenet.ecSite2018.api.toolbarBase.QViewToolbarBaseFactory;
+import net.qnenet.ecSite2018.api.view.QViewFactory;
+import net.qnenet.ecSite2018.api.view.QViewInstance;
+import net.qnenet.ecSite2018.api.view.QViewRegister;
+import net.qnenet.qLogging.api.QLog;
+import net.qnenet.qSystemInfo.api.QSystemInfo;
+
+@Theme("themeSea")
+
+@Widgetset("QWidgetset")
+//@PreserveOnRefresh
+//@Push // (value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET)
+@Viewport("width=device-width,initial-scale = 1.0")
+@Component(scope = ServiceScope.PROTOTYPE, property = { "loginView1=VNewSystemEnter", "loginView2=VOpenLocker",
+		"homeView1=VOpenLocker", "homeView2=VHome" })
+
+public class QSiteUserImpl extends UI implements QUI, EventHandler {
+
+	private static final long serialVersionUID = 1L;
+
+	private String loginView = "";
+	private String homeView = "";
+	private static final int TOOL_BAR_HEIGHT = 40;
+
+	@Reference
+	EventAdmin eventAdmin;
+
+	@Reference
+	QViewRegister viewRegister;
+
+	@Reference
+	QViewToolbarBaseFactory toolbarBaseFactory;
+
+	@Reference
+	QLog qLog;
+
+	@Reference
+	QSystemInfo systemInfo;
+
+	@SuppressWarnings("unused")
+	private boolean isTouchDevice;
+
+	Stack<String> menuStack = new Stack<>();
+
+	@SuppressWarnings("unused")
+	private Map<String, QViewFactory> viewFactories;
+
+	private Map<String, QVToolbarBase> qViews = new ConcurrentHashMap<>();
+
+	private Window menu;
+
+	private Panel menuPanel;
+
+	private VerticalLayout rootLayout;
+
+	private QVToolbarBase oldViewInstance;
+
+	private QVToolbarBase newViewInstance;
+
+	private Window displayWindow;
+
+	private Panel displayOldPanel;
+
+	private VerticalLayout displayWindowRoot;
+
+	Integer idx = null;
+
+	private String sessionId;
+
+	private int browserWindowWidth;
+	private int browserWindowHeight;
+
+//	private String prevSessionId;
+//	private String newSessionId;
+	
+
+	String[] topics = new String[] { "net/qnenet/viewbundlechanged" };
+
+	@Activate
+	void activate(BundleContext bundleContext, Map<String, Object> props) {
+
+		if (Files.notExists(systemInfo.lockersPath())) {
+			loginView = (String) props.get("loginView1");
+			homeView = (String) props.get("homeView1");
+		} else {
+			loginView = (String) props.get("loginView2");
+			homeView = (String) props.get("homeView2");
+		}
+
+		Dictionary<String, Object> eventProps = new Hashtable<>();
+		eventProps.put(EventConstants.EVENT_TOPIC, topics);
+		bundleContext.registerService(EventHandler.class.getName(), this, eventProps);
+		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+		qLog.logDeactivate(this);
+	}
+
+	@Override
+	public void setHomeView(String viewName) {
+		homeView = viewName;
+	}
+
+	@SuppressWarnings("serial")
+	@Override
+	protected void init(VaadinRequest request) {
+
+//		newSessionId = VaadinSession.getCurrent().getSession().getId();
+//		qLog.info(this, "New Session ID -> " + newSessionId);
+//		
+//		if (newSessionId.equals(prevSessionId)) {
+//			reset();
+//		}
+//		
+//		prevSessionId = newSessionId;
+
+		System.out.println("UI Init ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
+		browserWindowWidth = Page.getCurrent().getBrowserWindowWidth();
+		browserWindowHeight = Page.getCurrent().getBrowserWindowHeight();
+
+		Page.getCurrent().addBrowserWindowResizeListener(new BrowserWindowResizeListener() {
+
+			public void browserWindowResized(BrowserWindowResizeEvent event) {
+
+				browserWindowWidth = event.getWidth();
+				browserWindowHeight = event.getHeight();
+
+				if (menu != null && menu.isVisible()) {
+					menu.setHeight(event.getHeight(), Unit.PIXELS);
+				}
+
+				if (displayWindow != null) {
+					displayWindow.center();
+				}
+
+				if (newViewInstance != null) {
+					newViewInstance.browserWindowResize(browserWindowWidth, browserWindowHeight);
+				}
+			}
+		});
+
+		if (Page.getCurrent().getWebBrowser().isTouchDevice()) {
+			isTouchDevice = true;
+		}
+
+		rootLayout = new VerticalLayout();
+
+		rootLayout.setSizeFull();
+		rootLayout.setMargin(false);
+		rootLayout.setSpacing(false);
+
+		setContent(rootLayout);
+
+		viewFactories = viewRegister.getViewFactories();
+
+		showLoginView();
+
+	}
+
+	private void reset() {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void showLoginView() {
+		showView(loginView);
+	}
+
+	@Override
+	public void showHomeView() {
+		showView(homeView);
+	}
+
+	@Override
+	public void showView(String viewName) {
+
+		QVToolbarBase view = getViewInstance(viewName);
+		if (view == null) {
+			return;
+		}
+
+		newViewInstance = view;
+
+		if (menu != null) {
+
+			VerticalLayout menuLayout = view.getMenuLayout();
+
+			if (menuLayout == null) {
+				menu.setVisible(false);
+			} else {
+				menuPanel.setContent(menuLayout);
+				menu.setVisible(true);
+			}
+
+			if (viewName.equals(homeView)) {
+				menuStack.clear();
+			} else {
+				menuStack.push(viewName);
+			}
+
+		}
+
+//		if (viewToShowName.equals(HOME_VIEW)) {
+//			menuStack.clear();
+//		} else {
+//			menuStack.push(viewToShowName);
+//		}
+
+//		Collection<Window> anyWindows = getWindows();
+//		
+//		for (Window window : anyWindows) {
+//			if (window != menu) {
+//				window.setVisible(false);
+//			}
+//		}
+
+		if (displayWindow != null && displayWindow.isVisible()) {
+			displayWindow.setVisible(false);
+		}
+
+		if (oldViewInstance != null) {
+			oldViewInstance.overlayExit();
+		}
+
+		view.overlayEnter();
+		
+		view.browserWindowResize(browserWindowWidth, browserWindowHeight);
+
+		rootLayout.replaceComponent((com.vaadin.ui.Component) oldViewInstance,
+				(com.vaadin.ui.Component) newViewInstance);
+		oldViewInstance = newViewInstance;
+	}
+
+	@Override
+	public QVToolbarBase getViewInstance(String viewName) {
+		return getViewInstance(viewName, null);
+	}
+
+	@Override
+	public QVToolbarBase getViewInstance(String viewName, Dictionary<String, Object> props) {
+		QVToolbarBase baseView = qViews.get(viewName);
+
+		if (baseView == null) {
+
+			QViewFactory viewFactory = viewRegister.getViewFactory(viewName);
+
+			if (viewFactory == null) {
+				return null;
+			}
+
+			baseView = toolbarBaseFactory.getInstance(null);
+
+			baseView.setQUI(this);
+			baseView.setIdx(idx);
+
+//			view.setLockerPath(lockerPath);
+
+			QViewInstance viewInstance = viewFactory.getInstance(props);
+
+			viewInstance.setUp(this, baseView, viewFactory);
+
+			qViews.put(viewName, baseView);
+
+		}
+
+		return baseView;
+	}
+
+	@Override
+	public Window getMenu() {
+		if (menu != null) {
+			return menu;
+		}
+		menu = new Window();
+//		menu.addStyleName("trans");
+		menu.setClosable(false);
+		menu.setDraggable(false);
+		menu.setResizable(false);
+		menu.setWidth("180px");
+		int browserHeight = Page.getCurrent().getBrowserWindowHeight();
+		menu.setHeight(browserHeight - TOOL_BAR_HEIGHT - 2, Unit.PIXELS);
+		menu.setPositionX(0);
+		menu.setPositionY(41);
+		menuPanel = new Panel();
+		menuPanel.setSizeFull();
+		menuPanel.addStyleName(ValoTheme.PANEL_BORDERLESS);
+		menuPanel.addStyleName("trans");
+		menu.setContent(menuPanel);
+		menu.setVisible(false);
+		UI.getCurrent().addWindow(menu);
+		return menu;
+	}
+
+	@Override
+	public Window createDisplayWindow() {
+		if (displayWindow != null) {
+			return displayWindow;
+		}
+		displayWindow = new Window();
+
+		displayWindow.setClosable(false);
+		displayWindow.setDraggable(false);
+		displayWindow.setResizable(false);
+
+		displayWindow.center();
+
+		displayWindowRoot = new VerticalLayout();
+		displayWindowRoot.setSizeFull();
+//		displayWindowRoot.setMargin(false);
+//		displayWindowRoot.setSpacing(false);
+		displayWindow.setContent(displayWindowRoot);
+
+		displayWindow.setVisible(false);
+		UI.getCurrent().addWindow(displayWindow);
+		return displayWindow;
+	}
+
+	@Override
+	public void displayWindowShow(String width, String height, String style, Panel newPanel) {
+		if (displayWindow == null) {
+			createDisplayWindow();
+			if (height.isEmpty()) {
+				displayWindow.setHeightUndefined();
+			} else {
+				displayWindow.setHeight(height);
+			}
+			displayWindow.setWidth(width);
+			displayWindowRoot.addStyleName(style);
+		}
+
+//		if (height.isEmpty()) {
+//			displayWindow.setHeightUndefined();
+//		} else {
+//			displayWindow.setHeight(height);
+//		}
+//		displayWindow.setWidth(width);
+
+		displayWindowRoot.replaceComponent(displayOldPanel, newPanel);
+		displayOldPanel = newPanel;
+		displayWindow.setVisible(true);
+
+	}
+
+	@Override
+	public void showDisplayWindow() {
+		if (displayWindow != null && !displayWindow.isVisible()) {
+			displayWindow.setVisible(true);
+		}
+	}
+
+	@Override
+	public void hideDisplayWindow() {
+		if (displayWindow != null && displayWindow.isVisible()) {
+			displayWindow.setVisible(false);
+		}
+	}
+
+	@Override
+	public void detach() {
+
+		System.out
+				.println("UI Detach 000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+//        try {
+//            // unregister before closing
+//            if(this.registration != null) {
+//                try {
+//                    this.registration.unregister();
+//                } catch (IllegalStateException ise) {
+//                    // The listener was already unregistered,
+//                    // so no problems here.
+//                }
+//            }
+////            log.info("MainUI.detach() called");
+//            super.detach();
+//        } catch (Exception e) {
+////            log.error("Detach Exception " + e.getMessage());
+//        }
+	}
+
+	@Override
+	public void close() {
+		System.out.println(
+				"UI Close %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+//        try {
+//            log.info("MainUI.close() called");
+//            if (this.alertView != null) {
+//                this.alertViewFactory.ungetService(this.alertView);
+//            }
+//            if (UI.getCurrent() != null && UI.getCurrent().getPage() != null) {
+//                UI.getCurrent().getPage().setLocation(getLogoutUrl());
+//            }
+//            super.close();
+//        } catch (Exception e) {
+//            log.error("Destroy Exception " + e.getMessage());
+//        }
+	}
+
+	@Override
+	public Stack<String> getMenuStack() {
+		return menuStack;
+	}
+
+	@Override
+	public String getHomeView() {
+		return homeView;
+	}
+
+	@Override
+	public void closeWindow(Object windowData) {
+		Collection<Window> windows = getWindows();
+		for (Window window : windows) {
+			if (window.getData() == windowData) {
+				window.close();
+			}
+		}
+	}
+
+	@Override
+	public void hideView(String viewName) {
+	}
+
+	@Override
+	public void stopViewBundle(String viewName) {
+	}
+
+	@Override
+	public void uninstallViewBundle(String viewName) {
+	}
+
+	@Override
+	public void handleEvent(org.osgi.service.event.Event event) {
+		String eventViewName = (String) event.getProperty("viewName");
+		int bundleEventType = (int) event.getProperty("bundleEventType");
+
+		switch (bundleEventType) {
+
+		case BundleEvent.STARTED:
+			qLog.info(this, "View Name : " + eventViewName + " -> STARTED");
+//			addViewEverywhere(eventViewName);
+			break;
+		case BundleEvent.STOPPED:
+			qLog.info(this, "View Name : " + eventViewName + " -> STOPPED");
+			removeViewEverywhere(eventViewName);
+
+			QVToolbarBase viewInstance = qViews.get(eventViewName);
+
+			System.out.println(viewInstance.getMenuLayout().getComponentCount());
+
+			break;
+		case BundleEvent.INSTALLED:
+			qLog.info(this, "View Name : " + eventViewName + " -> INSTALLED");
+			break;
+		case BundleEvent.RESOLVED:
+			qLog.info(this, "View Name : " + eventViewName + " -> RESOLVED");
+			break;
+		case BundleEvent.STARTING:
+			qLog.info(this, "View Name : " + eventViewName + " -> STARTING");
+			break;
+		case BundleEvent.STOPPING:
+			qLog.info(this, "View Name : " + eventViewName + " -> STOPPING");
+			break;
+		case BundleEvent.UNRESOLVED:
+			qLog.info(this, "View Name : " + eventViewName + " -> UNRESOLVED");
+			break;
+		case BundleEvent.UNINSTALLED:
+			qLog.info(this, "View Name : " + eventViewName + " -> UNINSTALLED");
+			break;
+		case BundleEvent.UPDATED:
+			qLog.info(this, "View Name : " + eventViewName + " -> UPDATED");
+			break;
+
+		default:
+			break;
+		}
+
+	}
+
+//	private void addViewEverywhere(String viewName) {
+////		qViews.remove(viewName);
+//
+//	}
+
+	private void removeViewEverywhere(String viewName) {
+		for (QVToolbarBase viewInstance : qViews.values()) {
+			viewInstance.removeView(viewName);
+		}
+
+		qViews.remove(viewName);
+
+//		viewFactories = viewManager.getViewFactories();
+
+	}
+
+	@Override
+	public void setIdx(Integer idx) {
+		this.idx = idx;
+	}
+
+	@Override
+	public Integer getIdx() {
+		return idx;
+	}
+
+}

@@ -1,0 +1,24 @@
+-buildpath: \
+	osgi.annotation;version=6.0.1,\
+	osgi.core;version=6.0,\
+	osgi.cmpn;version=6.0,\
+	com.vaadin.server,\
+	com.vaadin.shared,\
+	org.jsoup,\
+	com.vaadin.spreadsheet,\
+	org.apache.servicemix.bundles.poi,\
+	net.qnenet.qLogging;version=latest,\
+	net.qnenet.qSiteUser;version=latest,\
+	org.apache.commons.io
+
+-testpath: \
+	${junit}
+
+javac.source: 1.8
+javac.target: 1.8
+
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: net.qnenet.qViewSpreadsheet.provider.*
+Export-Package: net.qnenet.qViewSpreadsheet.api
+
+-sources: false

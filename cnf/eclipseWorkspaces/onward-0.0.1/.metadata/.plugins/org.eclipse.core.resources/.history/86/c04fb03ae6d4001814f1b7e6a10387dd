@@ -1,0 +1,254 @@
+package net.qnenet.qSystemInfo.provider;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Properties;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+
+import net.qnenet.qSystemInfo.api.QSystemInfo;
+import net.qnenet.qUtils.files.QFileUtils;
+import net.qnenet.qUtils.properties.PropertyUtils;
+
+/**
+ * This is the implementation.It registers a Provider service.
+ */
+@Component(immediate = true)
+public class QSystemInfoImpl implements QSystemInfo {
+
+	
+
+	private Path homePath;
+	private Path networkPath;
+	private Path masterStoreFilePath;
+
+	private Path systemPath;
+
+	private Path lockersStoreFilePath;
+
+	private Path lockersPath;
+	private Path localGlobalPath;
+	private Path globalClassFilePath;
+	private Path globalEntitiesPath;
+	private Path localEntitiesFilePath;
+
+	private Properties systemProperties;
+	private Path systemPropertiesPath;
+	private Path systemPropertiesFilePath;
+	private Path passwordsFilePath;
+
+	@Activate
+	void activate(Map<String, Object> map) {
+		
+//		String isMasterStr = System.getProperty("isMaster");
+//		if (isMasterStr != null) {
+//
+//			if (isMasterStr.equalsIgnoreCase("y")) {
+//				isMaster = true;
+//			}
+//
+//			String isBootMasterStr = System.getProperty("isBootMaster");
+//			if (isBootMasterStr.equalsIgnoreCase("y")) {
+//				isBootMaster = true;
+//			}
+//
+//			masterBootIPAddr = System.getProperty("masterBootIP");
+//			String masterBootPortStr = System.getProperty("masterBootPort");
+//			masterBootPort = Integer.valueOf(masterBootPortStr);
+//		}
+
+		homePath = Paths.get(System.getProperty("baseDir"), "QNE");
+
+		networkPath = Paths.get(homePath.toString(), "network");
+
+		lockersPath = Paths.get(homePath.toString(), "lockers");
+
+		lockersStoreFilePath = Paths.get(lockersPath.toString(), "lockersStore.data");
+
+		systemPath = Paths.get(homePath.toString(), "system");
+
+		systemPropertiesPath = Paths.get(systemPath.toString(), "properties");
+
+		systemPropertiesFilePath = Paths.get(systemPropertiesPath.toString(), "system.props");
+
+		masterStoreFilePath = Paths.get(systemPath.toString(), "masterStore.data");
+
+		localGlobalPath = Paths.get(homePath.toString(), "localGlobal");
+
+		globalClassFilePath = Paths.get(localGlobalPath.toString(), "classes.data");
+
+		globalEntitiesPath = Paths.get(homePath.toString(), "localGlobal");
+
+		localEntitiesFilePath = Paths.get(localGlobalPath.toString(), "localEntities.data");
+
+
+		if (QFileUtils.checkDirectory(systemPropertiesPath)) {
+			systemProperties = new Properties();
+
+			systemProperties.put("isDebug", "n");
+			systemProperties.put("debugLockerKey", "");
+
+			systemProperties.put("isMaster", "n");
+			systemProperties.put("isMasterBoot", "n");
+
+			systemProperties.put("bootIPAddr", "192.168.1.3");
+			systemProperties.put("bootPort", "43912");
+
+			systemProperties.put("masterBootGlobalId", "2238976117");
+
+			saveSystemProperties();
+		}
+
+		loadSystemProperties();
+
+//		long MASTER_BOOT_GLOBAL_ID = 2238976117L;
+//		boolean IS_MASTER = true;
+//		boolean DEBUG = false;
+//		String DEBUG_LOCKER_KEY = "ywjym";
+
+//		String isMasterStr = System.getProperty("isMaster");
+//		if (isMasterStr != null) {
+//
+//			if (isMasterStr.equalsIgnoreCase("y")) {
+//				isMaster = true;
+//			}
+//
+//			String isBootMasterStr = System.getProperty("isBootMaster");
+//			if (isBootMasterStr.equalsIgnoreCase("y")) {
+//				isBootMaster = true;
+//			}
+//
+//			masterBootIPAddr = System.getProperty("masterBootIP");
+//			String masterBootPortStr = System.getProperty("masterBootPort");
+//			masterBootPort = Integer.valueOf(masterBootPortStr);
+//		}
+
+//		qLog.logActivate(this);
+
+	}
+
+	@Deactivate
+	void deactivate(Map<String, Object> map) {
+//		qLog.logDeactivate(this);
+	}
+
+	private void saveSystemProperties() {
+		PropertyUtils.savePropertiesToFile(systemProperties, systemPropertiesFilePath);
+	}
+
+	private void loadSystemProperties() {
+		systemProperties = PropertyUtils.loadPropertiesFromFile(systemPropertiesFilePath);
+	}
+
+	@Override
+	public Path homePath() {
+		return homePath;
+	}
+
+	@Override
+	public Path networkPath() {
+		return networkPath;
+	}
+
+	@Override
+	public Path systemPath() {
+		return systemPath;
+	}
+
+	@Override
+	public Path masterStoreFilePath() {
+		return masterStoreFilePath;
+	}
+
+	@Override
+	public Path lockersStoreFilePath() {
+		return lockersStoreFilePath;
+	}
+
+	@Override
+	public Path lockersPath() {
+		return lockersPath;
+	}
+
+	@Override
+	public Path localGlobalPath() {
+		return localGlobalPath;
+	}
+
+	@Override
+	public Path globalClassFilePath() {
+		return globalClassFilePath;
+	}
+
+	@Override
+	public Path globalEntitiesPath() {
+		return globalEntitiesPath;
+	}
+	
+	@Override
+	public Path localEntitiesFilePath() {
+		return localEntitiesFilePath;
+	}
+	
+
+
+
+	@Override
+	public boolean isMaster() {
+		String isMasterStr = systemProperties.getProperty("isMaster");
+		if (isMasterStr.equals("y")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isBootMaster() {
+		String isMasterBootStr = systemProperties.getProperty("isMasterBoot");
+		if (isMasterBootStr.equals("y")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public long getMasterBootGlobalId() {
+		String masterBootGlobalIdStr = systemProperties.getProperty("masterBootGlobalId");
+		return Long.valueOf(masterBootGlobalIdStr);
+	}
+
+	@Override
+	public int getMasterBootPort() {
+		String masterBootPortStr = systemProperties.getProperty("bootPort");
+		return Integer.valueOf(masterBootPortStr);
+
+	}
+
+	@Override
+	public String getMasterBootIPAddr() {
+		return systemProperties.getProperty("bootIPAddr");
+	}
+
+	@Override
+	public boolean getDebug() {
+		String isDebugStr = systemProperties.getProperty("isDebug");
+		if (isDebugStr.equals("y")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public String getDebugLockerKey() {
+		return systemProperties.getProperty("debugLockerKey");
+	}
+
+
+
+}

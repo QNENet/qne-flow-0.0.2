@@ -1,0 +1,75 @@
+package net.qnenet.qNetworkClasses;
+
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+
+import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.framework.Bundle;
+
+import io.netty.channel.Channel;
+import net.qnenet.qGlobalEntities.api.QSCIPV4Addr;
+import net.qnenet.qSecurityUtils.api.NoiseProtocol;
+import net.qnenet.qSerialization.api.QSerialization;
+
+@ProviderType
+public interface QEntity {
+
+	Integer getLockerId();
+
+	Integer getIdx();
+
+	long getGlobalId();
+
+	byte[] getPrivateKeyClone();
+
+	byte[] getPublicKeyClone();
+
+	void setGlobalId(long myGlobalId);
+
+	char[] getLockerKey();
+
+	boolean isLoadEntityInfoOK();
+
+	Path getEntityDataPath();
+
+	String getIPAddress();
+
+	int getPort();
+
+//	void sendToMaster(QNetworkMessageOrigin origin, QNetworkObject nto);
+
+	QEntityNetwork getNetwork();
+
+	QSerialization getSerialization();
+
+	long getAndAddNewId(QSCIPV4Addr ipV4Addr);
+
+	NoiseProtocol getNoiseProtocol();
+
+	void savePasswords();
+
+	void loadPasswords();
+
+	void savePasswords(List<QSCPassword> passwords);
+
+	Bundle[] getBundles();
+
+	Map<String, Bundle> getBundleNamesMap();
+
+	void installBundle(String string);
+
+	void startBundle(String string);
+
+	void stopBundle(String string);
+
+//	void replyNTO(QNetworkObject nto);
+
+//	QNetworkClient getServerNetworkChannel(long fromId, Channel channel);
+
+//	void send(QMessageEnvelope envelope);
+
+//	long handleRequestForNewGlobalId(ByteBuf newIdRequestByteBuf);
+
+//	QNetworkChannel getNewServerChannel(long sourceGlobalId);
+}

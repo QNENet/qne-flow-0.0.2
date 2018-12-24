@@ -1,0 +1,364 @@
+package net.qnenet.qEntity.provider.entity;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.ComponentInstance;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
+import com.vaadin.ui.UI;
+
+import net.qnenet.qEntity.api.entity.QSCEntityInfo;
+//import net.qnenet.qEntityNetwork.api.network.QEntityNetwork;
+import net.qnenet.qEntityNetwork.api.network.QEntityNetworkFactory;
+import net.qnenet.qGlobalEntities.api.QGlobalEntities;
+import net.qnenet.qGlobalEntities.api.QSCIPV4Addr;
+import net.qnenet.qLogging.api.QLog;
+import net.qnenet.qNetworkClasses.QEntity;
+import net.qnenet.qNetworkClasses.QEntityNetwork;
+import net.qnenet.qNetworkClasses.QMessageEnvelope;
+import net.qnenet.qNetworkClasses.QNetworkMessageOrigin;
+import net.qnenet.qNetworkClasses.QSCPassword;
+import net.qnenet.qSCObjectStore.api.QSCObjectStore;
+import net.qnenet.qSecurityUtils.api.NoiseProtocol;
+import net.qnenet.qSecurityUtils.api.QSecurityUtils;
+import net.qnenet.qSerialization.api.QSerialization;
+import net.qnenet.qSystemInfo.api.QSystemInfo;
+
+@Component(factory = "qEntity")
+public class QEntityImpl implements QEntity, QNetworkMessageOrigin {
+
+	@Reference
+	QEntityNetworkFactory networkFactory;
+
+	@Reference
+	QSystemInfo systemInfo;
+
+	@Reference
+	QSCObjectStore qSCObjectStore;
+
+	@Reference
+	QSecurityUtils securityUtils;
+	
+	@Reference
+	QSerialization serialization;
+	
+	@Reference
+	QGlobalEntities globalEntities;
+
+	@Reference
+	NoiseProtocol noiseProtocol;
+
+	@Reference
+	QLog qLog;
+
+	List<QSCPassword> passwords = new ArrayList<>();
+	
+	private QSCEntityInfo entityInfo;
+
+	private Key key;
+
+	private Path dataPath;
+
+	private Path storesPath;
+
+	private Path infoFilePath;
+
+	private Path passwordsFilePath;
+
+	private boolean loadEntityInfoFailed = false;
+
+	private Integer idx;
+
+	private ComponentInstance network;
+
+	private QEntityNetwork entityNetwork;
+
+	private BundleContext bundleContext;
+
+	private List<String> menuList;
+
+
+	@Activate
+	void activate(BundleContext ctx, Map<String, Object> map) throws IOException {
+		
+		this.bundleContext = ctx;
+		
+		UI.getCurrent().setData(this);
+		
+		Object r = UI.getCurrent().getData();
+
+
+		this.idx = (Integer) map.get("idx");
+		dataPath = Paths.get(systemInfo.lockersPath().toString(), String.valueOf(idx), "entityData");
+		storesPath = Paths.get(dataPath.toString(), "stores");
+		infoFilePath = Paths.get(storesPath.toString(), "entityInfo.data");
+		
+		passwordsFilePath = Paths.get(dataPath.toString(), "passwords.data");
+
+		char[] lockerKey = (char[]) map.get("lockerKey");
+		this.key = securityUtils.keyFromPassword(lockerKey);
+
+		loadEntityInfo();
+
+		if (entityInfo == null) {
+			loadEntityInfoFailed = true;
+			return;
+		}
+
+		Arrays.fill(lockerKey, '0');
+
+		Dictionary<String, Object> props = new Hashtable<>();
+
+		props.put("globalId", entityInfo.globalId);
+		props.put("ipAddress", entityInfo.ipAddress);
+		props.put("port", entityInfo.port);
+		
+		props.put("privateKeyClone", entityInfo.privateKey.clone());
+		props.put("publicKeyClone", entityInfo.publicKey.clone());
+
+		entityNetwork = (QEntityNetwork) networkFactory.getInstance(props);
+		
+		entityNetwork.setEntity(this);
+
+		if (entityInfo.globalId == 0) {
+			getNewGlobalId();
+		}
+		
+//		getBundleNamesMap();
+		
+		qLog.logActivate(this);
+	}
+
+	@Deactivate
+	void deactivate() {
+		
+		Arrays.fill(entityInfo.privateKey, (byte)0);	
+		Arrays.fill(entityInfo.publicKey, (byte)0);	
+		
+		network.dispose();
+		qLog.logDeactivate(this);
+	}
+
+	public void getNewGlobalId() {
+
+		if (systemInfo.isBootMaster()) {
+//			long globalId1 = systemInfo.getMasterBootGlobalId();
+			QSCIPV4Addr masterBootQSCIPV4Addr = new QSCIPV4Addr(systemInfo.getMasterBootIPAddr(),
+					systemInfo.getMasterBootPort());
+			Long r = globalEntities.getAndSaveNewEntityId(masterBootQSCIPV4Addr);
+			entityInfo.globalId = r;
+			saveEntityInfo();
+		} else {
+
+//			NTOGetNewGlobalEntityId nto = new NTOGetNewGlobalEntityId();
+//			nto.ipV4Addr = new QSCIPV4Addr(entityInfo.ipAddress, entityInfo.port);
+//			entityNetwork.sendToMaster(this, nto);
+		}
+	}
+	
+	@Override
+	public void process(QMessageEnvelope envelope) {
+//		Object obj = serialization.fromBytes(envelope.contentBytes);
+//		if (obj instanceof NTOGetNewGlobalEntityId) {
+//			NTOGetNewGlobalEntityId nto = (NTOGetNewGlobalEntityId) obj;
+//			entityInfo.globalId = nto.entityId;
+//			saveEntityInfo();
+//		}
+	}
+
+
+	@Override
+	public boolean isLoadEntityInfoOK() {
+		return !loadEntityInfoFailed;
+	}
+
+//	@Override
+
+	private void saveEntityInfo() {
+		qSCObjectStore.save(infoFilePath, entityInfo, key);
+	}
+
+	private void loadEntityInfo() {
+		try {
+			entityInfo = (QSCEntityInfo) qSCObjectStore.load(infoFilePath, key);
+		} catch (Exception e) {
+			entityInfo = null;
+		}
+	}
+
+	@Override
+	public Integer getLockerId() {
+		if (entityInfo != null) {
+			return entityInfo.lockerId;
+		}
+		return null;
+	}
+
+	@Override
+	public Integer getIdx() {
+		return idx;
+	}
+
+	@Override
+	public long getGlobalId() {
+		return entityInfo.globalId;
+	}
+
+	@Override
+	public byte[] getPrivateKeyClone() {
+		return entityInfo.privateKey.clone();
+	}
+
+	@Override
+	public byte[] getPublicKeyClone() {
+		return entityInfo.publicKey.clone();
+	}
+
+	@Override
+	public void setGlobalId(long myGlobalId) {
+		entityInfo.globalId = myGlobalId;
+		saveEntityInfo();
+	}
+
+	@Override
+	public char[] getLockerKey() {
+		return entityInfo.loginKeyChars;
+	}
+
+	@Override
+	public Path getEntityDataPath() {
+		return dataPath;
+	}
+
+	@Override
+	public String getIPAddress() {
+		return entityInfo.ipAddress;
+	}
+
+	@Override
+	public int getPort() {
+		return entityInfo.port;
+	}
+	
+//	@Override
+//	public void send(QMessageEnvelope envelope) {
+//		entityNetwork.sendEnvelope(envelope);
+//	}
+//
+//
+//	@Override
+//	public void sendToMaster(QNetworkMessageOrigin origin, QNetworkObject nto) {
+//		entityNetwork.sendToMaster(origin, nto);
+//	}
+//	
+//	@Override
+//	public void replyNTO(QNetworkObject nto) {
+//		entityNetwork.replyNTO(nto);
+//	}
+
+
+	@Override
+	public QEntityNetwork getNetwork() {
+		return entityNetwork;
+	}
+
+	@Override
+	public QSerialization getSerialization() {
+		return serialization;
+	}
+
+	@Override
+	public long getAndAddNewId(QSCIPV4Addr ipV4Addr) {
+		return globalEntities.getAndSaveNewEntityId(ipV4Addr);
+	}
+
+	@Override
+	public NoiseProtocol getNoiseProtocol() {
+		return noiseProtocol;
+	}
+
+	@Override
+	public void savePasswords() {
+		qSCObjectStore.save(passwordsFilePath, passwords, key);
+	}
+
+	@Override
+	public void savePasswords(List<QSCPassword> passwords) {
+		this.passwords = passwords;
+		savePasswords();
+	}
+
+	@SuppressWarnings("unchecked")
+	public void loadPasswords() {
+		passwords = (List<QSCPassword>) qSCObjectStore.load(passwordsFilePath,key);
+	}
+
+	@Override
+	public Bundle[] getBundles() {
+		return bundleContext.getBundles();
+	}
+
+	@Override
+	public Map<String, Bundle> getBundleNamesMap() {
+
+		Map<String, Bundle> map = new HashMap<>();
+		
+		Bundle[] bundles = bundleContext.getBundles();
+		for (Bundle bundle : bundles) {
+			String location = bundle.getLocation();
+			
+			if (location.equals("System Bundle")) {
+				continue;
+			}
+			
+			String[] parts = location.split("/");
+			
+			String bundleName = parts[parts.length - 1];
+			map.put(bundleName, bundle);
+			
+			System.out.println(bundleName);
+		}
+		return map;
+	}
+	
+
+	@Override
+	public void installBundle(String string) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void startBundle(String string) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stopBundle(String string) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public List<String> getMenuList() {
+		return menuList;
+	}
+
+
+}
