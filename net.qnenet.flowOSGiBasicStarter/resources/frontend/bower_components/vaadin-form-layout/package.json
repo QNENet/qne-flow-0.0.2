@@ -1,0 +1,32 @@
+{
+  "name": "@vaadin/vaadin-form-layout",
+  "version": "2.1.1",
+  "description": "Polymer element providing configurable responsive layout for form elements",
+  "main": "vaadin-form-layout.html",
+  "repository": "vaadin/vaadin-form-layout",
+  "keywords": [
+    "Vaadin",
+    "form-layout",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/vaadin-form-layout/issues"
+  },
+  "homepage": "https://vaadin.com/components",
+  "files": [
+    "vaadin-*.js",
+    "src",
+    "theme"
+  ],
+  "scripts": {
+    "test": "wct",
+    "preversion": "gulp version:update"
+  },
+  "devDependencies": {
+    "@vaadin/vaadin-component-dev-dependencies": "^1.0.0"
+  }
+}

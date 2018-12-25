@@ -1,0 +1,38 @@
+-buildpath: \
+	osgi.annotation;version=6.0.1,\
+	osgi.core;version=6.0,\
+	osgi.cmpn;version=6.0,\
+	com.vaadin.flow.server,\
+	javax.servlet-api,\
+	com.vaadin.flow.osgi,\
+	com.vaadin.flow.component.button,\
+	com.vaadin.flow.component.notification,\
+	com.vaadin.flow.component.orderedlayout,\
+	com.vaadin.flow.theme.lumo
+
+-testpath: \
+	${junit}
+
+javac.source: 1.8
+javac.target: 1.8
+
+Bundle-Version: 0.0.0.${tstamp}
+
+Private-Package: com.example.starter.base.*
+
+-runrequires: \
+	bnd.identity;id='net.qnenet.flowOSGiBasicStarter',\
+	bnd.identity;id='com.vaadin.flow.client',\
+	bnd.identity;id='slf4j.simple'
+	
+-runfw: org.apache.felix.framework;version='[5.6.10,5.6.10]'
+
+-runee: JavaSE-1.8
+
+#Include-Resource: /resources/icons/icon.png=/resources/icons/icon.png
+	
+Include-Resource: resources=resources
+
+
+
+Vaadin-OSGi-Extender: true

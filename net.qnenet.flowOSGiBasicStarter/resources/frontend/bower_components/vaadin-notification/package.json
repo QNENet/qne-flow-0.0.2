@@ -1,0 +1,32 @@
+{
+  "name": "@vaadin/vaadin-notification",
+  "version": "1.2.1",
+  "description": "vaadin-notification",
+  "main": "vaadin-notification.html",
+  "repository": "vaadin/vaadin-notification",
+  "keywords": [
+    "Vaadin",
+    "vaadin-notification",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/vaadin-notification/issues"
+  },
+  "homepage": "https://vaadin.com/components",
+  "files": [
+    "vaadin-*.js",
+    "src",
+    "theme"
+  ],
+  "scripts": {
+    "test": "wct",
+    "preversion": "gulp version:update"
+  },
+  "devDependencies": {
+    "@vaadin/vaadin-component-dev-dependencies": "^1.0.0"
+  }
+}

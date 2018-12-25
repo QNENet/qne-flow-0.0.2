@@ -1,0 +1,32 @@
+{
+  "name": "@vaadin/vaadin-context-menu",
+  "version": "4.2.1",
+  "description": "Web Component for showing context dependent items for any element on the page",
+  "main": "vaadin-context-menu.html",
+  "repository": "vaadin/vaadin-context-menu",
+  "keywords": [
+    "Vaadin",
+    "context menu",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/vaadin-context-menu/issues"
+  },
+  "homepage": "https://vaadin.com/components",
+  "files": [
+    "vaadin-*.js",
+    "src",
+    "theme"
+  ],
+  "devDependencies": {
+    "@vaadin/vaadin-component-dev-dependencies": "^1.0.0"
+  },
+  "scripts": {
+    "test": "wct",
+    "preversion": "gulp version:update"
+  }
+}
