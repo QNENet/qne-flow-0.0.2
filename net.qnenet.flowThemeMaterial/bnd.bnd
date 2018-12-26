@@ -1,0 +1,17 @@
+-buildpath: \
+	osgi.annotation;version=6.0.1,\
+	osgi.core;version=6.0,\
+	osgi.cmpn;version=6.0,\
+	net.qnenet.flow.server;version=latest,\
+	slf4j.api
+
+-testpath: \
+	${junit}
+
+javac.source: 1.8
+javac.target: 1.8
+
+Bundle-Version: 0.0.0.${tstamp}
+
+
+Export-Package: com.vaadin.flow.theme.material

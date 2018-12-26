@@ -20,6 +20,7 @@ com.sun.xml.txw2:txw2:20110809
 com.univocity:univocity-parsers:2.7.5
 com.vaadin.external:gentyref:1.2.0.vaadin1
 com.vaadin.external.atmosphere:atmosphere-runtime:2.4.30.vaadin1
+com.vaadin.external.gwt:gwt-elemental:2.8.2.vaadin2
 com.vaadin.external.slf4j:vaadin-slf4j-jdk14:1.6.1
 com.webcohesion.enunciate:enunciate-core-annotations:2.11.1
 commons-codec:commons-codec:1.9
@@ -34,6 +35,7 @@ io.netty:netty-resolver:4.1.28.Final
 io.netty:netty-transport:4.1.28.Final
 javax.mail:mail:1.4.7
 javax.servlet:javax.servlet-api:3.1.0
+javax.validation:validation-api:2.0.1.Final
 javax.ws.rs:jsr311-api:1.1.1
 junit:junit:4.12
 org.apache.commons:commons-collections4:4.2
