@@ -5,10 +5,10 @@
 	com.vaadin.flow.server,\
 	javax.servlet-api,\
 	com.vaadin.flow.osgi,\
-	com.vaadin.flow.component.button,\
 	com.vaadin.flow.component.notification,\
 	com.vaadin.flow.component.orderedlayout,\
-	com.vaadin.flow.theme.lumo
+	com.vaadin.flow.theme.lumo,\
+	net.qnenet.flowComponentButton;version=latest
 
 -testpath: \
 	${junit}
@@ -18,7 +18,6 @@ javac.target: 1.8
 
 Bundle-Version: 0.0.0.${tstamp}
 
-Private-Package: com.example.starter.base.*
 
 -runrequires: \
 	bnd.identity;id='net.qnenet.flowOSGiBasicStarter',\
@@ -31,8 +30,12 @@ Private-Package: com.example.starter.base.*
 
 #Include-Resource: /resources/icons/icon.png=/resources/icons/icon.png
 	
-Include-Resource: resources=resources
+Include-Resource: frontend=/resources/frontend
 
+# assignment ::= PATH '=' source
 
+#acme/Merge.class=src/acme/Merge.class
 
 Vaadin-OSGi-Extender: true
+
+Private-Package: com.example.starter.base.*

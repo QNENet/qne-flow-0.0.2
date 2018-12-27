@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="Local" increment="1545769134808">
+<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="Local" increment="1545865128156">
   <resource>
     <capability namespace="osgi.identity">
       <attribute name="license" value="http://www.apache.org/licenses/LICENSE-2.0"/>
@@ -2318,39 +2318,6 @@
   </resource>
   <resource>
     <capability namespace="osgi.identity">
-      <attribute name="osgi.identity" value="com.vaadin.external.org.slf4j"/>
-      <attribute name="type" value="osgi.bundle"/>
-      <attribute name="version" value="1.6.1" type="Version"/>
-    </capability>
-    <capability namespace="osgi.wiring.bundle">
-      <attribute name="bundle-version" value="1.6.1" type="Version"/>
-      <attribute name="osgi.wiring.bundle" value="com.vaadin.external.org.slf4j"/>
-    </capability>
-    <capability namespace="osgi.wiring.host">
-      <attribute name="bundle-version" value="1.6.1" type="Version"/>
-      <attribute name="osgi.wiring.host" value="com.vaadin.external.org.slf4j"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="1.6.1" type="Version"/>
-      <attribute name="osgi.wiring.package" value="com.vaadin.external.org.slf4j"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="1.6.1" type="Version"/>
-      <attribute name="osgi.wiring.package" value="com.vaadin.external.org.slf4j.spi"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="1.6.1" type="Version"/>
-      <attribute name="osgi.wiring.package" value="com.vaadin.external.org.slf4j.helpers"/>
-    </capability>
-    <capability namespace="osgi.content">
-      <attribute name="size" value="34900" type="Long"/>
-      <attribute name="url" value="com.vaadin.external.org.slf4j/com.vaadin.external.org.slf4j-1.6.1.jar"/>
-      <attribute name="mime" value="application/vnd.osgi.bundle"/>
-      <attribute name="osgi.content" value="A1F953CAAEDF990BA23D2D9122E0349B49FEF9B0E4A1474617D144F60AD1B7A8"/>
-    </capability>
-  </resource>
-  <resource>
-    <capability namespace="osgi.identity">
       <attribute name="license" value="http://www.apache.org/licenses/LICENSE-2.0, http://www.eclipse.org/org/documents/epl-v10.php"/>
       <attribute name="osgi.identity" value="org.eclipse.jetty.servlet"/>
       <attribute name="type" value="osgi.bundle"/>
@@ -3101,41 +3068,6 @@
     </requirement>
     <requirement namespace="osgi.ee">
       <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.8))"/>
-    </requirement>
-  </resource>
-  <resource>
-    <capability namespace="osgi.identity">
-      <attribute name="osgi.identity" value="slf4j.simple"/>
-      <attribute name="type" value="osgi.fragment"/>
-      <attribute name="version" value="1.7.25" type="Version"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="1.7.25" type="Version"/>
-      <attribute name="osgi.wiring.package" value="org.slf4j.impl"/>
-    </capability>
-    <capability namespace="osgi.content">
-      <attribute name="size" value="15257" type="Long"/>
-      <attribute name="url" value="slf4j.simple/slf4j.simple-1.7.25.jar"/>
-      <attribute name="mime" value="application/vnd.osgi.bundle"/>
-      <attribute name="osgi.content" value="0966E86FFFA5BE52D3D9E7B89DD674D98A03EED0A454FBAF7C1BD9493BD9D874"/>
-    </capability>
-    <requirement namespace="osgi.wiring.bundle">
-      <directive name="filter" value="(osgi.wiring.bundle=slf4j.api)"/>
-    </requirement>
-    <requirement namespace="osgi.wiring.host">
-      <directive name="filter" value="(osgi.wiring.host=slf4j.api)"/>
-    </requirement>
-    <requirement namespace="osgi.wiring.package">
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.slf4j)(version&gt;=1.7.25))"/>
-    </requirement>
-    <requirement namespace="osgi.wiring.package">
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.slf4j.spi)(version&gt;=1.7.25))"/>
-    </requirement>
-    <requirement namespace="osgi.wiring.package">
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.slf4j.helpers)(version&gt;=1.7.25))"/>
-    </requirement>
-    <requirement namespace="osgi.wiring.package">
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.slf4j.event)(version&gt;=1.7.25))"/>
     </requirement>
   </resource>
   <resource>
@@ -5603,46 +5535,6 @@
       <attribute name="mime" value="application/vnd.osgi.bundle"/>
       <attribute name="osgi.content" value="F2B7B8A8E842246A18545814E788B8012672E7B8AB1592D2F94DE7EC53D464C1"/>
     </capability>
-  </resource>
-  <resource>
-    <capability namespace="osgi.identity">
-      <attribute name="osgi.identity" value="slf4j.api"/>
-      <attribute name="type" value="osgi.bundle"/>
-      <attribute name="version" value="1.7.25" type="Version"/>
-    </capability>
-    <capability namespace="osgi.wiring.bundle">
-      <attribute name="bundle-version" value="1.7.25" type="Version"/>
-      <attribute name="osgi.wiring.bundle" value="slf4j.api"/>
-    </capability>
-    <capability namespace="osgi.wiring.host">
-      <attribute name="bundle-version" value="1.7.25" type="Version"/>
-      <attribute name="osgi.wiring.host" value="slf4j.api"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="1.7.25" type="Version"/>
-      <attribute name="osgi.wiring.package" value="org.slf4j"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="1.7.25" type="Version"/>
-      <attribute name="osgi.wiring.package" value="org.slf4j.spi"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="1.7.25" type="Version"/>
-      <attribute name="osgi.wiring.package" value="org.slf4j.helpers"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="1.7.25" type="Version"/>
-      <attribute name="osgi.wiring.package" value="org.slf4j.event"/>
-    </capability>
-    <capability namespace="osgi.content">
-      <attribute name="size" value="41203" type="Long"/>
-      <attribute name="url" value="slf4j.api/slf4j.api-1.7.25.jar"/>
-      <attribute name="mime" value="application/vnd.osgi.bundle"/>
-      <attribute name="osgi.content" value="18C4A0095D5C1DA6B817592E767BB23D29DD2F560AD74DF75FF3961DBDE25B79"/>
-    </capability>
-    <requirement namespace="osgi.wiring.package">
-      <directive name="filter" value="(&amp;(osgi.wiring.package=org.slf4j.impl)(version&gt;=1.6.0))"/>
-    </requirement>
   </resource>
   <resource>
     <capability namespace="osgi.identity">
@@ -8617,40 +8509,6 @@
     </requirement>
     <requirement namespace="osgi.ee">
       <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.8))"/>
-    </requirement>
-  </resource>
-  <resource>
-    <capability namespace="osgi.identity">
-      <attribute name="license" value="http://www.apache.org/licenses/LICENSE-2.0"/>
-      <attribute name="osgi.identity" value="com.vaadin.external.gwt"/>
-      <attribute name="type" value="osgi.bundle"/>
-      <attribute name="version" value="2.8.2.vaadin2" type="Version"/>
-    </capability>
-    <capability namespace="osgi.wiring.bundle">
-      <attribute name="bundle-version" value="2.8.2.vaadin2" type="Version"/>
-      <attribute name="osgi.wiring.bundle" value="com.vaadin.external.gwt"/>
-    </capability>
-    <capability namespace="osgi.wiring.host">
-      <attribute name="bundle-version" value="2.8.2.vaadin2" type="Version"/>
-      <attribute name="osgi.wiring.host" value="com.vaadin.external.gwt"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <attribute name="version" value="2.8.2" type="Version"/>
-      <attribute name="osgi.wiring.package" value="elemental.json"/>
-    </capability>
-    <capability namespace="osgi.wiring.package">
-      <directive name="uses" value="elemental.json"/>
-      <attribute name="version" value="2.8.2" type="Version"/>
-      <attribute name="osgi.wiring.package" value="elemental.json.impl"/>
-    </capability>
-    <capability namespace="osgi.content">
-      <attribute name="size" value="65905" type="Long"/>
-      <attribute name="url" value="com.vaadin.external.gwt/com.vaadin.external.gwt-2.8.2.jar"/>
-      <attribute name="mime" value="application/vnd.osgi.bundle"/>
-      <attribute name="osgi.content" value="04F75EE196FFFC2253282322E60E99FAE3FB434F8D63DE3C3098D89F4ED53274"/>
-    </capability>
-    <requirement namespace="osgi.ee">
-      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.5))"/>
     </requirement>
   </resource>
   <resource>
