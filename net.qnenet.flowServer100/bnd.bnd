@@ -1,0 +1,25 @@
+-buildpath: \
+	osgi.annotation;version=6.0.1,\
+	osgi.core;version=6.0,\
+	osgi.cmpn;version=6.0,\
+	slf4j.api,\
+	org.jsoup,\
+	com.vaadin.external.gwt,\
+	com.vaadin.external.gentyref,\
+	com.helger.ph-commons,\
+	com.helger.ph-css,\
+	javax.servlet-api,\
+	org.apache.commons.io,\
+	com.vaadin.external.atmosphere.runtime,\
+	org.apache.commons.fileupload,\
+	net.bytebuddy.byte-buddy
+
+-testpath: \
+	${junit}
+
+javac.source: 1.8
+javac.target: 1.8
+
+Bundle-Version: 0.0.0.${tstamp}
+
+Private-Package: com.vaadin.flow.*

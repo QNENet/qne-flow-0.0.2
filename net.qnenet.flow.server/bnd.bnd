@@ -20,8 +20,21 @@
 javac.source: 1.8
 javac.target: 1.8
 
-Bundle-Version: 0.0.0.${tstamp}
+#Bundle-Version: 0.0.0.${tstamp}
 
-Export-Package: com.vaadin.flow.*
+#Export-Package: com.vaadin.flow.*
 
-Include-Resource: resources=resources, services=services
+Include-Resource: VAADIN=resources/VAADIN, services=services
+
+
+#Bundle-SymbolicName: com.vaadin.flow.server
+
+Bundle-Name: Vaadin Flow Server
+Bundle-Version: 1.2.3
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Import-Package: org.atmosphere*;resolution:=optional;version='2.4.30.vaadin1',\
+  *
+Export-Package: com.vaadin.flow.client,\
+    com.vaadin.flow*;-noimport:=true
+Bundle-Activator: com.vaadin.flow.server.osgi.ServletContainerInitializerExtender

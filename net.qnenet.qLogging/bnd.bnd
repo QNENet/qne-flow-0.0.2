@@ -1,0 +1,18 @@
+-buildpath: \
+	osgi.annotation;version=6.0.1,\
+	osgi.core;version=6.0,\
+	osgi.cmpn;version=6.0,\
+	bcprov,\
+	org.apache.commons.io
+
+-testpath: \
+	${junit}
+
+javac.source: 1.8
+javac.target: 1.8
+
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: net.qnenet.qLogging.provider
+Export-Package: net.qnenet.qLogging.api
+
+-sources: false

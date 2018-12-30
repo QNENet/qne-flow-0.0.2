@@ -111,10 +111,6 @@ public @interface Tag {
      */
     String HR = "hr";
     /**
-     * Tag for an <code>&lt;iframe&gt;</code>.
-     */
-    String IFRAME = "iframe";
-    /**
      * Tag for an <code>&lt;img&gt;</code>.
      */
     String IMG = "img";

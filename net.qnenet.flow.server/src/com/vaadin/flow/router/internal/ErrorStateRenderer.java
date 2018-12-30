@@ -24,7 +24,6 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 
 /**
@@ -78,10 +77,10 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
      */
     @Override
     public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            Class<? extends Component> targetType, Router router) {
+            Class<? extends Component> targetType) {
         assert targetType == getNavigationState().getNavigationTarget();
 
-        return RouteUtil.getParentLayoutsForNonRouteTarget(targetType);
+        return RouterUtil.getParentLayoutsForNonRouteTarget(targetType);
     }
 
     @Override

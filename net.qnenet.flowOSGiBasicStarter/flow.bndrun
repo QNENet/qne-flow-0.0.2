@@ -25,7 +25,6 @@
 -resolve: auto
 
 -runblacklist: \
-	bnd.identity;id='net.qnenet.flow.server',\
 	bnd.identity;id='net.qnenet.flowClient',\
 	bnd.identity;id='net.qnenet.flowComponentButton',\
 	bnd.identity;id='net.qnenet.flowComponentNotification',\
@@ -35,7 +34,8 @@
 	bnd.identity;id='net.qnenet.flowOSGiSupport',\
 	bnd.identity;id='net.qnenet.flowPush',\
 	bnd.identity;id='net.qnenet.flowThemeLumo',\
-	bnd.identity;id='net.qnenet.flowThemeMaterial'
+	bnd.identity;id='net.qnenet.flowThemeMaterial',\
+	bnd.identity;id='com.vaadin.flow.server'
 	
 	
 -runbundles: \
@@ -51,9 +51,9 @@
 	com.vaadin.flow.data;version='[1.2.3,1.2.4)',\
 	com.vaadin.flow.html.components;version='[1.2.3,1.2.4)',\
 	com.vaadin.flow.osgi;version='[1.2.3,1.2.4)',\
-	com.vaadin.flow.server;version='[1.2.3,1.2.4)',\
 	com.vaadin.flow.theme.lumo;version='[1.2.3,1.2.4)',\
 	net.bytebuddy.byte-buddy;version='[1.9.0,1.9.1)',\
+	net.qnenet.flow.server;version=snapshot,\
 	net.qnenet.flowOSGiBasicStarter;version=snapshot,\
 	org.apache.aries.spifly.dynamic.bundle;version='[1.0.12,1.0.13)',\
 	org.apache.aries.spifly.static.bundle;version='[1.0.12,1.0.13)',\

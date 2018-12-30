@@ -48,7 +48,7 @@ public class ErrorNavigationTargetInitializer
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
 
-        ApplicationRouteRegistry.getInstance(servletContext)
+        RouteRegistry.getInstance(servletContext)
                 .setErrorNavigationTargets(routes);
     }
 

@@ -1,0 +1,20 @@
+-buildpath: \
+	osgi.annotation;version=6.0.1,\
+	osgi.core;version=6.0,\
+	osgi.cmpn;version=6.0,\
+	com.vaadin.external.gentyref,\
+	javax.servlet-api,\
+	com.vaadin.external.org.slf4j,\
+	slf4j.api,\
+	net.bytebuddy.byte-buddy,\
+	net.qnenet.flow.server;version=latest,\
+	net.qnenet.qLogging;version=latest
+
+-testpath: \
+	${junit}
+
+javac.source: 1.8
+javac.target: 1.8
+
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: com.vaadin.flow.server.osgi

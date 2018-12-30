@@ -27,7 +27,6 @@ import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 
 /**
@@ -52,13 +51,12 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
 
     @Override
     protected List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            Class<? extends Component> targetType, Router router) {
+            Class<? extends Component> targetType) {
         NavigationState navigationState = getNavigationState();
-        assert targetType == navigationState
-                .getNavigationTarget() : "Trying to get layouts for wrong route target";
+        assert targetType == navigationState.getNavigationTarget();
 
-        return router.getRegistry()
-                .getRouteLayouts(navigationState.getResolvedPath(), targetType);
+        return RouterUtil.getParentLayouts(targetType,
+                navigationState.getResolvedPath());
     }
 
     @Override

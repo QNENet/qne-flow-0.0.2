@@ -18,8 +18,6 @@ package com.vaadin.flow.router;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
@@ -60,8 +58,8 @@ public class RouterLink extends Component
      * Creates a new empty router link.
      */
     public RouterLink() {
-        getElement()
-                .setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "");
+        getElement().setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE,
+                "");
     }
 
     /**
@@ -69,9 +67,9 @@ public class RouterLink extends Component
      * text.
      *
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      */
     public RouterLink(String text,
             Class<? extends Component> navigationTarget) {
@@ -85,15 +83,15 @@ public class RouterLink extends Component
      * text and parameter.
      *
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(String text,
             Class<? extends C> navigationTarget, T parameter) {
@@ -107,13 +105,13 @@ public class RouterLink extends Component
      * text.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      */
-    public RouterLink(Router router, String text,
+    public RouterLink(com.vaadin.flow.router.Router router, String text,
             Class<? extends Component> navigationTarget) {
         this();
         setText(text);
@@ -125,21 +123,21 @@ public class RouterLink extends Component
      * text and parameter.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
-            Router router, String text, Class<? extends C> navigationTarget,
-            T parameter) {
+            com.vaadin.flow.router.Router router, String text,
+            Class<? extends C> navigationTarget, T parameter) {
         this();
         setText(text);
         setRoute(router, navigationTarget, parameter);
@@ -149,11 +147,11 @@ public class RouterLink extends Component
      * Set the navigation target for this link.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      */
-    public void setRoute(Router router,
+    public void setRoute(com.vaadin.flow.router.Router router,
             Class<? extends Component> navigationTarget) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget);
@@ -164,33 +162,31 @@ public class RouterLink extends Component
      * Set the navigation target for this link.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
-            Router router, Class<? extends C> navigationTarget, T parameter) {
+            com.vaadin.flow.router.Router router,
+            Class<? extends C> navigationTarget, T parameter) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget, parameter);
         updateHref(url);
     }
 
-    private void validateRouteParameters(Router router,
-            Class<? extends Component> navigationTarget) {
+    private void validateRouteParameters(com.vaadin.flow.router.Router router,
+            Class<?> navigationTarget) {
         if (router == null) {
             throw new IllegalArgumentException("Router must not be null");
-        } else if (!router.getRegistry().getTargetUrl(navigationTarget)
-                .isPresent()) {
-            LoggerFactory.getLogger(RouterLink.class)
-                    .warn("Creating link for non registered navigationTarget '"
-                            + navigationTarget.getName()
-                            + "'. If target is not registered when link is used, navigation will fail on a 404 not found.");
+        } else if (!navigationTarget.isAnnotationPresent(Route.class)) {
+            throw new IllegalArgumentException(
+                    "Given navigation target is not an @Route target!");
         }
     }
 
@@ -206,9 +202,10 @@ public class RouterLink extends Component
     /**
      * Gets the {@link QueryParameters} of this link.
      *
-     * @return an optional of {@link QueryParameters}, or an empty optional if
-     * there are no query parameters set
      * @see #setQueryParameters(QueryParameters)
+     *
+     * @return an optional of {@link QueryParameters}, or an empty optional if
+     *         there are no query parameters set
      */
     public Optional<QueryParameters> getQueryParameters() {
         return Optional.ofNullable(queryParameters);
@@ -222,8 +219,8 @@ public class RouterLink extends Component
      * {@code href} attribute of this link.
      *
      * @param queryParameters
-     *         the query parameters object, or {@code null} to remove
-     *         existing query parameters
+     *            the query parameters object, or {@code null} to remove
+     *            existing query parameters
      */
     public void setQueryParameters(QueryParameters queryParameters) {
         this.queryParameters = queryParameters;
@@ -265,8 +262,9 @@ public class RouterLink extends Component
      * with this link's {@link #getHref()} value, as defined in
      * {@link HighlightConditions#locationPrefix()}.
      *
-     * @return the highlight condition, never {@code null}
      * @see #setHighlightCondition(HighlightCondition)
+     *
+     * @return the highlight condition, never {@code null}
      */
     public HighlightCondition<RouterLink> getHighlightCondition() {
         return highlightCondition;
@@ -279,10 +277,11 @@ public class RouterLink extends Component
      * The evaluation of this condition will be processed by this link's
      * {@link HighlightAction}.
      *
-     * @param highlightCondition
-     *         the highlight condition, not {@code null}
      * @see #setHighlightAction(HighlightAction)
      * @see HighlightConditions
+     *
+     * @param highlightCondition
+     *            the highlight condition, not {@code null}
      */
     public void setHighlightCondition(
             HighlightCondition<RouterLink> highlightCondition) {
@@ -298,8 +297,9 @@ public class RouterLink extends Component
      * The default action is to toggle the {@code highlight} attribute of the
      * element, as defined in {@link HighlightActions#toggleAttribute(String)}.
      *
-     * @return the highlight action, never {@code null}
      * @see #setHighlightAction(HighlightAction)
+     *
+     * @return the highlight action, never {@code null}
      */
     public HighlightAction<RouterLink> getHighlightAction() {
         return highlightAction;
@@ -313,10 +313,11 @@ public class RouterLink extends Component
      * {@link HighlightAction#highlight(Object, boolean)} to clear any previous
      * highlight state.
      *
-     * @param highlightAction
-     *         the highlight action, not {@code null}
      * @see #setHighlightCondition(HighlightCondition)
      * @see HighlightActions
+     *
+     * @param highlightAction
+     *            the highlight action, not {@code null}
      */
     public void setHighlightAction(
             HighlightAction<RouterLink> highlightAction) {

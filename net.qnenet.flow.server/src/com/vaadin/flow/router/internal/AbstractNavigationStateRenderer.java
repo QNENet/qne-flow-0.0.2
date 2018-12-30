@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -56,7 +57,7 @@ import com.vaadin.flow.router.RouterLayout;
 public abstract class AbstractNavigationStateRenderer
         implements NavigationHandler {
     private enum TransitionOutcome {
-        FORWARDED, FINISHED, REROUTED, POSTPONED
+        FINISHED, REROUTED, POSTPONED
     }
 
     private static List<Integer> statusCodes = ReflectTools
@@ -122,13 +123,13 @@ public abstract class AbstractNavigationStateRenderer
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
         List<Class<? extends RouterLayout>> routeLayoutTypes = getRouterLayoutTypes(
-                routeTargetType, ui.getRouter());
+                routeTargetType);
 
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
 
         clearContinueNavigationAction(ui);
-        RouteUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
+        RouterUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         if (eventActionsSupported()) {
 
@@ -151,15 +152,9 @@ public abstract class AbstractNavigationStateRenderer
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
                     beforeNavigationDeactivating, leaveHandlers);
 
-            if (transitionOutcome == TransitionOutcome.FORWARDED) {
-                return forward(event, beforeNavigationDeactivating);
-            }
-
             if (transitionOutcome == TransitionOutcome.REROUTED) {
                 return reroute(event, beforeNavigationDeactivating);
-            }
-
-            if (transitionOutcome == TransitionOutcome.POSTPONED) {
+            } else if (transitionOutcome == TransitionOutcome.POSTPONED) {
                 ContinueNavigationAction currentAction = beforeNavigationDeactivating
                         .getContinueNavigationAction();
                 currentAction.setReferences(this, event);
@@ -180,7 +175,7 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType);
 
-        LocationChangeEvent locationChangeEvent = RouteUtil.createEvent(event,
+        LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event,
                 chain);
 
         notifyNavigationTarget(componentInstance, event,
@@ -202,11 +197,6 @@ public abstract class AbstractNavigationStateRenderer
                 beforeNavigationActivating, enterHandlers);
 
         if (eventActionsSupported()
-                && TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
-            return forward(event, beforeNavigationActivating);
-        }
-
-        if (eventActionsSupported()
                 && TransitionOutcome.REROUTED.equals(transitionOutcome)) {
             return reroute(event, beforeNavigationActivating);
         }
@@ -215,7 +205,7 @@ public abstract class AbstractNavigationStateRenderer
                 navigationState.getResolvedPath(), componentInstance,
                 routerLayouts);
 
-        RouteUtil.updatePageTitle(event, componentInstance);
+        RouterUtil.updatePageTitle(event, componentInstance);
 
         int statusCode = locationChangeEvent.getStatusCode();
         validateStatusCode(statusCode, routeTargetType);
@@ -257,14 +247,12 @@ public abstract class AbstractNavigationStateRenderer
      *
      * @param routeTargetType
      *            component type that will be shown
-     * @param router
-     *            used router instance
      *
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
      */
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            Class<? extends Component> routeTargetType, Router router);
+            Class<? extends Component> routeTargetType);
 
     /**
      * Checks whether this renderer should reroute or postpone navigation based
@@ -314,11 +302,6 @@ public abstract class AbstractNavigationStateRenderer
             BeforeLeaveHandler listener = leaveHandlers.remove();
             listener.beforeLeave(beforeNavigation);
 
-            validateBeforeEvent(beforeNavigation);
-            if (beforeNavigation.hasForwardTarget()) {
-                return TransitionOutcome.FORWARDED;
-            }
-
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             } else if (beforeNavigation.isPostponed()) {
@@ -345,28 +328,12 @@ public abstract class AbstractNavigationStateRenderer
 
         for (BeforeEnterHandler eventHandler : enterHandlers) {
             eventHandler.beforeEnter(beforeNavigation);
-            validateBeforeEvent(beforeNavigation);
-
-            if (beforeNavigation.hasForwardTarget()) {
-                return TransitionOutcome.FORWARDED;
-            }
 
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             }
         }
         return TransitionOutcome.FINISHED;
-    }
-
-    private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
-        NavigationHandler handler = beforeNavigation.getForwardTarget();
-
-        NavigationEvent newNavigationEvent = getNavigationEvent(event,
-                beforeNavigation);
-        newNavigationEvent.getUI().getPage().getHistory()
-                .replaceState(null, newNavigationEvent.getLocation());
-
-        return handler.handle(newNavigationEvent);
     }
 
     private int reroute(NavigationEvent event, BeforeEvent beforeNavigation) {
@@ -389,14 +356,8 @@ public abstract class AbstractNavigationStateRenderer
                     NavigationTrigger.PROGRAMMATIC, errorParameter);
         }
 
-        Class<? extends Component> targetType;
-        if (beforeNavigation.hasForwardTarget())  {
-            targetType = beforeNavigation.getForwardTargetType();
-        } else {
-            targetType = beforeNavigation.getRouteTargetType();
-        }
-
-        Location location = new Location(Router.resolve(targetType, targetType
+        final Class<?> routeTargetType = beforeNavigation.getRouteTargetType();
+        Location location = new Location(Router.resolve(routeTargetType, routeTargetType
                 .getAnnotation(Route.class)));
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
@@ -410,13 +371,6 @@ public abstract class AbstractNavigationStateRenderer
                     "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
                     statusCode, targetClass.getName());
             throw new IllegalStateException(msg);
-        }
-    }
-
-    private static void validateBeforeEvent(BeforeEvent event) {
-        if (event.hasForwardTarget() && event.hasRerouteTarget()) {
-            throw new IllegalStateException(
-                    "Error forward & reroute can not be set at the same time");
         }
     }
 

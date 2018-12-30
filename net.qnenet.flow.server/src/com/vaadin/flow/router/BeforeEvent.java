@@ -26,8 +26,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
-import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
 
 /**
  * Abstract before event class that has the common functionalities for
@@ -38,11 +38,9 @@ public abstract class BeforeEvent extends EventObject {
     private final NavigationTrigger trigger;
     private final UI ui;
 
-    private NavigationHandler forwardTarget;
     private NavigationHandler rerouteTarget;
 
     private final Class<?> navigationTarget;
-    private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
 
@@ -50,9 +48,9 @@ public abstract class BeforeEvent extends EventObject {
      * Construct event from a NavigationEvent.
      *
      * @param event
-     *         NavigationEvent that is on going
+     *            NavigationEvent that is on going
      * @param navigationTarget
-     *         Navigation target
+     *            Navigation target
      */
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
@@ -63,16 +61,16 @@ public abstract class BeforeEvent extends EventObject {
      * Constructs a new BeforeNavigation Event.
      *
      * @param router
-     *         the router that triggered the change, not {@code null}
+     *            the router that triggered the change, not {@code null}
      * @param trigger
-     *         the type of user action that triggered this location change,
-     *         not <code>null</code>
+     *            the type of user action that triggered this location change,
+     *            not <code>null</code>
      * @param location
-     *         the new location, not {@code null}
+     *            the new location, not {@code null}
      * @param navigationTarget
-     *         navigation target class
+     *            navigation target class
      * @param ui
-     *         the UI related to the navigation
+     *            the UI related to the navigation
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui) {
@@ -102,7 +100,7 @@ public abstract class BeforeEvent extends EventObject {
      * Gets the type of user action that triggered this location change.
      *
      * @return the type of user action that triggered this location change, not
-     * <code>null</code>
+     *         <code>null</code>
      */
     public NavigationTrigger getTrigger() {
         return trigger;
@@ -114,31 +112,12 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Check if we have a forward target.
-     *
-     * @return forward target exists
-     */
-    public boolean hasForwardTarget() {
-        return forwardTarget != null;
-    }
-
-    /**
      * Check if we have a reroute target.
      *
      * @return reroute target exists
      */
     public boolean hasRerouteTarget() {
         return rerouteTarget != null;
-    }
-
-    /**
-     * Gets the forward target to use if the user should be forwarded to some
-     * other view.
-     *
-     * @return navigation handler
-     */
-    public NavigationHandler getForwardTarget() {
-        return forwardTarget;
     }
 
     /**
@@ -152,97 +131,14 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Forward the navigation to use the provided navigation handler instead of
-     * the currently used handler.
-     *
-     * @param forwardTarget
-     *            the navigation handler to use, or {@code null} to clear a
-     *            previously set forward target
-     * @param targetState
-     *            the target navigation state of the rerouting
-     */
-    public void forwardTo(NavigationHandler forwardTarget,
-                          NavigationState targetState) {
-        this.forwardTargetState = targetState;
-        this.forwardTarget = forwardTarget;
-    }
-
-    /**
-     * Forward the navigation to the given navigation state.
-     *
-     * @param targetState
-     *            the target navigation state, not {@code null}
-     */
-    public void forwardTo(NavigationState targetState) {
-        Objects.requireNonNull(targetState, "targetState cannot be null");
-        forwardTo(new NavigationStateRenderer(targetState), targetState);
-    }
-
-    /**
-     * Forward the navigation to show the given component instead of the
-     * component that is currently about to be displayed.
-     *
-     * @param forwardTargetComponent
-     *            the component type to display, not {@code null}
-     */
-    public void forwardTo(Class<? extends Component> forwardTargetComponent) {
-        Objects.requireNonNull(forwardTargetComponent,
-                "forwardTargetComponent cannot be null");
-        forwardTo(new NavigationStateBuilder().withTarget(forwardTargetComponent)
-                .build());
-    }
-
-    /**
-     * Forward to navigation component registered for given location string
-     * instead of the component about to be displayed.
-     *
-     * @param location
-     *            forward target location string
-     */
-    public void forwardTo(String location) {
-        getSource().getRegistry().getNavigationTarget(location)
-                .ifPresent(this::forwardTo);
-    }
-
-    /**
-     * Forward to navigation component registered for given location string with
-     * given location parameter instead of the component about to be displayed.
-     *
-     * @param location
-     *            reroute target location string
-     * @param locationParam
-     *            location parameter
-     * @param <T>
-     *            location parameter type
-     */
-    public <T> void forwardTo(String location, T locationParam) {
-        forwardTo(location, Collections.singletonList(locationParam));
-    }
-
-    /**
-     * Forward to navigation component registered for given location string with
-     * given location parameters instead of the component about to be displayed.
-     *
-     * @param location
-     *            reroute target location string
-     * @param locationParams
-     *            location parameters
-     * @param <T>
-     *            location parameters type
-     */
-    public <T> void forwardTo(String location, List<T> locationParams) {
-        forwardTo(getNavigationState(location, locationParams));
-    }
-
-    /**
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
      *
      * @param rerouteTarget
-     *         the navigation handler to use, or {@code null} to clear a
-     *         previously set reroute target
+     *            the navigation handler to use, or {@code null} to clear a
+     *            previously set reroute target
      * @param targetState
-     *         the target navigation state of the rerouting
+     *            the target navigation state of the rerouting
      */
     public void rerouteTo(NavigationHandler rerouteTarget,
             NavigationState targetState) {
@@ -254,7 +150,7 @@ public abstract class BeforeEvent extends EventObject {
      * Reroutes the navigation to the given navigation state.
      *
      * @param targetState
-     *         the target navigation state of the rerouting, not {@code null}
+     *            the target navigation state of the rerouting, not {@code null}
      */
     public void rerouteTo(NavigationState targetState) {
         Objects.requireNonNull(targetState, "targetState cannot be null");
@@ -266,7 +162,7 @@ public abstract class BeforeEvent extends EventObject {
      * component that is currently about to be displayed.
      *
      * @param routeTargetType
-     *         the component type to display, not {@code null}
+     *            the component type to display, not {@code null}
      */
     public void rerouteTo(Class<? extends Component> routeTargetType) {
         Objects.requireNonNull(routeTargetType,
@@ -280,7 +176,7 @@ public abstract class BeforeEvent extends EventObject {
      * instead of the component about to be displayed.
      *
      * @param route
-     *         reroute target location string
+     *            reroute target location string
      */
     public void rerouteTo(String route) {
         getSource().getRegistry().getNavigationTarget(route)
@@ -292,11 +188,11 @@ public abstract class BeforeEvent extends EventObject {
      * given route parameter instead of the component about to be displayed.
      *
      * @param route
-     *         reroute target location string
+     *            reroute target location string
      * @param routeParam
-     *         route parameter
+     *            route parameter
      * @param <T>
-     *         route parameter type
+     *            route parameter type
      */
     public <T> void rerouteTo(String route, T routeParam) {
         rerouteTo(route, Collections.singletonList(routeParam));
@@ -307,27 +203,34 @@ public abstract class BeforeEvent extends EventObject {
      * given route parameters instead of the component about to be displayed.
      *
      * @param route
-     *         reroute target location string
+     *            reroute target location string
      * @param routeParams
-     *         route parameters
+     *            route parameters
      * @param <T>
-     *         route parameters type
+     *            route parameters type
      */
     public <T> void rerouteTo(String route, List<T> routeParams) {
-        rerouteTo(getNavigationState(route, routeParams));
+        List<String> segments = routeParams.stream().map(Object::toString)
+                .collect(Collectors.toList());
+        Class<? extends Component> target = getTargetOrThrow(route, segments);
+
+        if (!routeParams.isEmpty()) {
+            checkUrlParameterType(routeParams.get(0), target);
+        }
+        rerouteTo(new NavigationStateBuilder().withTarget(target, segments)
+                .build());
     }
 
     private Class<? extends Component> getTargetOrThrow(String route,
             List<String> segments) {
-        Optional<Class<? extends Component>> target = getSource()
-                .getRegistry().getNavigationTarget(route, segments);
-
-        if (!target.isPresent()) {
-            throw new IllegalArgumentException(
-                        String.format("No route '%s' accepting the parameters %s was found.",
-                            route, segments));
+        if (!getSource().getRegistry().hasRouteTo(route)) {
+            throw new IllegalArgumentException(String.format(
+                    "No navigation target found for route '%s'", route));
         }
-        return target.get();
+        return getSource().getRegistry().getNavigationTarget(route, segments)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "The navigation target for route '%s' doesn't accept the parameters %s.",
+                        route, segments)));
     }
 
     private <T> void checkUrlParameterType(T routeParam,
@@ -341,33 +244,12 @@ public abstract class BeforeEvent extends EventObject {
         }
     }
 
-    private <T> NavigationState getNavigationState(String route, List<T> routeParams) {
-        List<String> segments = routeParams.stream().map(Object::toString)
-                .collect(Collectors.toList());
-        Class<? extends Component> target = getTargetOrThrow(route, segments);
-
-        if (!routeParams.isEmpty()) {
-            checkUrlParameterType(routeParams.get(0), target);
-        }
-
-        return new NavigationStateBuilder().withTarget(target, segments).build();
-    }
-
-    /**
-     * Get the forward target for forwarding.
-     *
-     * @return forward target
-     */
-    public Class<? extends Component> getForwardTargetType() {
-        return forwardTargetState.getNavigationTarget();
-    }
-
     /**
      * Get the route target for rerouting.
      *
      * @return route target
      */
-    public Class<? extends Component> getRouteTargetType() {
+    public Class<?> getRouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
     }
 
@@ -386,7 +268,7 @@ public abstract class BeforeEvent extends EventObject {
      * Exception class needs to have default no-arg constructor.
      *
      * @param exception
-     *         exception to get error target for
+     *            exception to get error target for
      * @see BeforeLeaveEvent#rerouteToError(Exception, String)
      */
     public void rerouteToError(Class<? extends Exception> exception) {
@@ -399,9 +281,9 @@ public abstract class BeforeEvent extends EventObject {
      * Exception class needs to have default no-arg constructor.
      *
      * @param exception
-     *         exception to get error target for
+     *            exception to get error target for
      * @param customMessage
-     *         custom message to send to error target
+     *            custom message to send to error target
      * @see BeforeLeaveEvent#rerouteToError(Exception, String)
      */
     public void rerouteToError(Class<? extends Exception> exception,
@@ -414,12 +296,12 @@ public abstract class BeforeEvent extends EventObject {
      * Reroute to error target for given exception with given custom message.
      *
      * @param exception
-     *         exception to get error target for
+     *            exception to get error target for
      * @param customMessage
-     *         custom message to send to error target
+     *            custom message to send to error target
      */
     public void rerouteToError(Exception exception, String customMessage) {
-        Optional<ErrorTargetEntry> maybeLookupResult = getSource()
+        Optional<ErrorTargetEntry> maybeLookupResult = getSource().getRegistry()
                 .getErrorNavigationTarget(exception);
 
         if (maybeLookupResult.isPresent()) {

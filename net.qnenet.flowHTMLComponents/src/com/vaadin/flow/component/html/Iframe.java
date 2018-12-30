@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * @author Vaadin Ltd
  * @since 1.3
  */
-@Tag(Tag.IFRAME)
+//@Tag(Tag.IFRAME)
 public class Iframe extends Component {
 
   /**

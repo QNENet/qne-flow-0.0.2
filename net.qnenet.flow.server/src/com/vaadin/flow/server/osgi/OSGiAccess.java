@@ -37,8 +37,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
-import com.vaadin.flow.internal.UsageStatistics;
-import org.osgi.framework.Bundle;
 import org.slf4j.LoggerFactory;
 
 import com.googlecode.gentyref.GenericTypeReflector;
@@ -51,7 +49,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 
 /**
- * Manages scanned classes inside OSGi container.
+ * Manages scanned classes inside OSGi conteiner.
  * <p>
  * It doesn't do anything outside of OSGi.
  *
@@ -265,30 +263,10 @@ public final class OSGiAccess {
         private static boolean isInOSGi() {
             try {
                 Class.forName("org.osgi.framework.FrameworkUtil");
-
-                UsageStatistics.markAsUsed("flow/osgi", getOSGiVersion());
-
                 return true;
             } catch (ClassNotFoundException exception) {
                 return false;
             }
         }
-
-        /**
-         * Tries to detect the version of the OSGi framework used.
-         *
-         * @return the used OSGi version or {@code null} if not able to detect it
-         */
-        private static String getOSGiVersion() {
-            try {
-                Bundle osgiBundle = org.osgi.framework.FrameworkUtil.getBundle(Bundle.class);
-                return osgiBundle.getVersion().toString();
-            } catch (Throwable throwable) {
-                // just eat it so that any failure in the version detection doesn't break OSGi usage
-                LoggerFactory.getLogger(OSGiAccess.class).info("Unable to detect used OSGi framework version due to " + throwable.getMessage());
-            }
-            return null;
-        }
-
     }
 }
