@@ -3,13 +3,13 @@
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
 	net.qnenet.flowOSGiSupport;version=latest,\
-	net.qnenet.flow.server;version=latest,\
 	com.vaadin.external.gwt,\
 	javax.validation.api,\
 	com.vaadin.external.gentyref,\
 	com.vaadin.external.org.slf4j,\
 	slf4j.api,\
-	net.qnenet.flowHTMLComponents;version=latest
+	net.qnenet.flowHTMLComponents;version=latest,\
+	net.qnenet.flowServer;version=latest
 
 -testpath: \
 	${junit}

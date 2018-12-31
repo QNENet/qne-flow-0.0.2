@@ -2,8 +2,8 @@
 	osgi.annotation;version=6.0.1,\
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
-	net.qnenet.flow.server;version=latest,\
-	com.vaadin.external.gwt
+	com.vaadin.external.gwt,\
+	net.qnenet.flowServer;version=latest
 
 -testpath: \
 	${junit}

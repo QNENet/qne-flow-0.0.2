@@ -3,7 +3,7 @@
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
 	com.vaadin.flow.html.components,\
-	net.qnenet.flow.server;version=latest
+	net.qnenet.flowServer;version=latest
 
 -testpath: \
 	${junit}

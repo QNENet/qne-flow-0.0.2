@@ -53,7 +53,6 @@
 	com.vaadin.flow.osgi;version='[1.2.3,1.2.4)',\
 	com.vaadin.flow.theme.lumo;version='[1.2.3,1.2.4)',\
 	net.bytebuddy.byte-buddy;version='[1.9.0,1.9.1)',\
-	net.qnenet.flow.server;version=snapshot,\
 	net.qnenet.flowOSGiBasicStarter;version=snapshot,\
 	org.apache.aries.spifly.dynamic.bundle;version='[1.0.12,1.0.13)',\
 	org.apache.aries.spifly.static.bundle;version='[1.0.12,1.0.13)',\
@@ -71,4 +70,5 @@
 	org.objectweb.asm.all.debug;version='[5.0.3,5.0.4)',\
 	org.osgi.service.serviceloader;version='[1.0.0,1.0.1)',\
 	slf4j.api;version='[1.7.25,1.7.26)',\
-	slf4j.simple;version='[1.7.25,1.7.26)'
+	slf4j.simple;version='[1.7.25,1.7.26)',\
+	net.qnenet.flowServer;version=snapshot
