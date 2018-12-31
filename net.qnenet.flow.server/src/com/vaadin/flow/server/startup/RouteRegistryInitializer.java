@@ -32,31 +32,23 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  * Servlet initializer for collecting all available {@link Route}s on startup.
  */
 @HandlesTypes({ Route.class, RouteAlias.class })
-public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
-        implements ServletContainerInitializer {
+public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer implements ServletContainerInitializer {
 
-    @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
-        try {
-            if (classSet == null) {
-                RouteRegistry.getInstance(servletContext)
-                        .setNavigationTargets(Collections.emptySet());
-                return;
-            }
-            Set<Class<? extends Component>> routes = validateRouteClasses(
-                    classSet.stream());
+	@Override
+	public void onStartup(Set<Class<?>> classSet, ServletContext servletContext) throws ServletException {
+		try {
+			if (classSet == null) {
+				RouteRegistry.getInstance(servletContext).setNavigationTargets(Collections.emptySet());
+				return;
+			}
+			Set<Class<? extends Component>> routes = validateRouteClasses(classSet.stream());
 
-            RouteRegistry routeRegistry = RouteRegistry
-                    .getInstance(servletContext);
-            routeRegistry.setNavigationTargets(routes);
-            routeRegistry.setPwaConfigurationClass(validatePwaClass(
-                    routes.stream().map(clazz -> (Class<?>) clazz)));
-        } catch (InvalidRouteConfigurationException irce) {
-            throw new ServletException(
-                    "Exception while registering Routes on servlet startup",
-                    irce);
-        }
-    }
+			RouteRegistry routeRegistry = RouteRegistry.getInstance(servletContext);
+			routeRegistry.setNavigationTargets(routes);
+			routeRegistry.setPwaConfigurationClass(validatePwaClass(routes.stream().map(clazz -> (Class<?>) clazz)));
+		} catch (InvalidRouteConfigurationException irce) {
+			throw new ServletException("Exception while registering Routes on servlet startup", irce);
+		}
+	}
 
 }

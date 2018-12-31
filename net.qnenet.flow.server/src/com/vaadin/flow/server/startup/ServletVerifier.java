@@ -28,27 +28,24 @@ import java.util.Set;
  * In cases of non compatible servlet version application deployment will fail.
  */
 public class ServletVerifier implements ServletContainerInitializer {
-    @Override
-    public void onStartup(Set<Class<?>> c, ServletContext ctx)
-            throws ServletException {
-        verifyServletVersion();
-    }
+	@Override
+	public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+		verifyServletVersion();
+	}
 
-    /**
-     * Verify that the used servlet version is not too old.
-     * 
-     * @throws ServletException
-     *             thrown if the servlet version is not compatible
-     */
-    public static void verifyServletVersion() throws ServletException {
-        try {
-            Method m = HttpServletResponse.class
-                    .getMethod("setContentLengthLong", long.class);
-            if (m == null) {
-                throw new ServletException("Servlet 3.1+ is required");
-            }
-        } catch (Exception e) {
-            throw new ServletException("Servlet 3.1+ is required", e);
-        }
-    }
+	/**
+	 * Verify that the used servlet version is not too old.
+	 * 
+	 * @throws ServletException thrown if the servlet version is not compatible
+	 */
+	public static void verifyServletVersion() throws ServletException {
+		try {
+			Method m = HttpServletResponse.class.getMethod("setContentLengthLong", long.class);
+			if (m == null) {
+				throw new ServletException("Servlet 3.1+ is required");
+			}
+		} catch (Exception e) {
+			throw new ServletException("Servlet 3.1+ is required", e);
+		}
+	}
 }

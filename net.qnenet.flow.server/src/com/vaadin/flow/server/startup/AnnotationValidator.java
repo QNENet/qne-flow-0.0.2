@@ -34,21 +34,17 @@ import com.vaadin.flow.theme.Theme;
  * Validation class that is run during servlet container initialization which
  * checks that specific annotations are not configured wrong.
  */
-@HandlesTypes({ Viewport.class, BodySize.class, Inline.class, Theme.class,
-        Push.class })
-public class AnnotationValidator extends AbstractAnnotationValidator
-        implements ServletContainerInitializer {
+@HandlesTypes({ Viewport.class, BodySize.class, Inline.class, Theme.class, Push.class })
+public class AnnotationValidator extends AbstractAnnotationValidator implements ServletContainerInitializer {
 
-    @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
-        validateClasses(classSet);
-    }
+	@Override
+	public void onStartup(Set<Class<?>> classSet, ServletContext servletContext) throws ServletException {
+		validateClasses(classSet);
+	}
 
-    @Override
-    protected List<Class<?>> getAnnotations() {
-        return Arrays.asList(
-                this.getClass().getAnnotation(HandlesTypes.class).value());
-    }
+	@Override
+	protected List<Class<?>> getAnnotations() {
+		return Arrays.asList(this.getClass().getAnnotation(HandlesTypes.class).value());
+	}
 
 }

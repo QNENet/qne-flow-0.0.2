@@ -59,214 +59,193 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
  *
  */
 public final class OSGiAccess {
-    private static final OSGiAccess INSTANCE = new OSGiAccess();
+	private static final OSGiAccess INSTANCE = new OSGiAccess();
 
-    private final ServletContext context = LazyOSGiDetector.IS_IN_OSGI
-            ? createOSGiServletContext()
-            : null;
+	private final ServletContext context = LazyOSGiDetector.IS_IN_OSGI ? createOSGiServletContext() : null;
 
-    private final AtomicReference<Collection<Class<? extends ServletContainerInitializer>>> initializerClasses = LazyOSGiDetector.IS_IN_OSGI
-            ? new AtomicReference<>()
-            : null;
+	private final AtomicReference<Collection<Class<? extends ServletContainerInitializer>>> initializerClasses = LazyOSGiDetector.IS_IN_OSGI
+			? new AtomicReference<>()
+			: null;
 
-    private final Map<Long, Collection<Class<?>>> cachedClasses = LazyOSGiDetector.IS_IN_OSGI
-            ? new ConcurrentHashMap<>()
-            : null;
+	private final Map<Long, Collection<Class<?>>> cachedClasses = LazyOSGiDetector.IS_IN_OSGI
+			? new ConcurrentHashMap<>()
+			: null;
 
-    private OSGiAccess() {
-        // The class is a singleton. Avoid instantiation outside of the class.
-    }
+	private OSGiAccess() {
+		// The class is a singleton. Avoid instantiation outside of the class.
+	}
 
-    /**
-     * This is internal class and is not intended to be used.
-     * <p>
-     * It's public only because it needs to be proxied.
-     * <p>
-     * This class represents a singletion servlet context instance which is not
-     * a real servlet context.
-     */
-    public abstract static class OSGiServletContext implements ServletContext {
+	/**
+	 * This is internal class and is not intended to be used.
+	 * <p>
+	 * It's public only because it needs to be proxied.
+	 * <p>
+	 * This class represents a singletion servlet context instance which is not a
+	 * real servlet context.
+	 */
+	public abstract static class OSGiServletContext implements ServletContext {
 
-        private final Map<String, Object> attributes = new HashMap<>();
+		private final Map<String, Object> attributes = new HashMap<>();
 
-        @Override
-        public void setAttribute(String name, Object object) {
-            attributes.put(name, object);
-        }
+		@Override
+		public void setAttribute(String name, Object object) {
+			attributes.put(name, object);
+		}
 
-        @Override
-        public Object getAttribute(String name) {
-            return attributes.get(name);
-        }
+		@Override
+		public Object getAttribute(String name) {
+			return attributes.get(name);
+		}
 
-        @Override
-        public void log(String msg) {
-            // This method is used by Atmosphere initiailizer
-            LoggerFactory.getLogger(OSGiAccess.class).warn(msg);
-        }
+		@Override
+		public void log(String msg) {
+			// This method is used by Atmosphere initiailizer
+			LoggerFactory.getLogger(OSGiAccess.class).warn(msg);
+		}
 
-        @Override
-        public Map<String, ? extends ServletRegistration> getServletRegistrations() {
-            // This method is used by Atmosphere initiailizer
-            return Collections.emptyMap();
-        }
+		@Override
+		public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+			// This method is used by Atmosphere initiailizer
+			return Collections.emptyMap();
+		}
 
-    }
+	}
 
-    /**
-     * Gets the singleton instance.
-     *
-     * @return the singleton instance
-     */
-    public static OSGiAccess getInstance() {
-        return INSTANCE;
-    }
+	/**
+	 * Gets the singleton instance.
+	 *
+	 * @return the singleton instance
+	 */
+	public static OSGiAccess getInstance() {
+		return INSTANCE;
+	}
 
-    /**
-     * Gets a servlet context instance which is used to track registries which
-     * are storage of scanned classes.
-     * <p>
-     * This is not a real servlet context. It's just a proxied unique instance
-     * which is used to be able to access registries in a generic way via some
-     * {@code getInstance(ServletContext)} method.
-     *
-     * @return
-     */
-    public ServletContext getOsgiServletContext() {
-        return context;
-    }
+	/**
+	 * Gets a servlet context instance which is used to track registries which are
+	 * storage of scanned classes.
+	 * <p>
+	 * This is not a real servlet context. It's just a proxied unique instance which
+	 * is used to be able to access registries in a generic way via some
+	 * {@code getInstance(ServletContext)} method.
+	 *
+	 * @return
+	 */
+	public ServletContext getOsgiServletContext() {
+		return context;
+	}
 
-    /**
-     * Sets the discovered servlet context initializer classes.
-     * <p>
-     * The OSGi bundle tracker is used to scan all classes in bundles and it
-     * also scans <b>flow-server</b> module for servlet initializer classes.
-     * They are set using this method once they are collected.
-     *
-     * @param contextInitializers
-     *            servlet context initializer classes
-     */
-    public void setServletContainerInitializers(
-            Collection<Class<? extends ServletContainerInitializer>> contextInitializers) {
-        assert contextInitializers != null;
-        initializerClasses.set(new ArrayList<>(contextInitializers));
-    }
+	/**
+	 * Sets the discovered servlet context initializer classes.
+	 * <p>
+	 * The OSGi bundle tracker is used to scan all classes in bundles and it also
+	 * scans <b>flow-server</b> module for servlet initializer classes. They are set
+	 * using this method once they are collected.
+	 *
+	 * @param contextInitializers servlet context initializer classes
+	 */
+	public void setServletContainerInitializers(
+			Collection<Class<? extends ServletContainerInitializer>> contextInitializers) {
+		assert contextInitializers != null;
+		initializerClasses.set(new ArrayList<>(contextInitializers));
+	}
 
-    /**
-     * Checks whether the servlet initializers are discovered.
-     *
-     * @return {@code true} if servlet initializers are set, {@code false}
-     *         otherwise
-     */
-    public boolean hasInitializers() {
-        return initializerClasses.get() != null;
-    }
+	/**
+	 * Checks whether the servlet initializers are discovered.
+	 *
+	 * @return {@code true} if servlet initializers are set, {@code false} otherwise
+	 */
+	public boolean hasInitializers() {
+		return initializerClasses.get() != null;
+	}
 
-    /**
-     * Adds scanned classes in active bundles.
-     * <p>
-     * The map contains a bundle id as a key and classes discovered in the
-     * bundle as a value.
-     *
-     * @param extenderClasses
-     *            a map with discovered classes in active bundles
-     */
-    public void addScannedClasses(
-            Map<Long, Collection<Class<?>>> extenderClasses) {
-        cachedClasses.putAll(extenderClasses);
-        resetContextInitializers();
-    }
+	/**
+	 * Adds scanned classes in active bundles.
+	 * <p>
+	 * The map contains a bundle id as a key and classes discovered in the bundle as
+	 * a value.
+	 *
+	 * @param extenderClasses a map with discovered classes in active bundles
+	 */
+	public void addScannedClasses(Map<Long, Collection<Class<?>>> extenderClasses) {
+		cachedClasses.putAll(extenderClasses);
+		resetContextInitializers();
+	}
 
-    /**
-     * Removes classes from the bundle identified by the {@code bundleId}.
-     * <p>
-     * When a bundle becomes inactive its classes should not be used anymore.
-     * This method removes the classes from the bundle from the collection of
-     * discovered classes.
-     *
-     * @param bundleId
-     *            the bundle identifier
-     */
-    public void removeScannedClasses(Long bundleId) {
-        cachedClasses.remove(bundleId);
-        resetContextInitializers();
-    }
+	/**
+	 * Removes classes from the bundle identified by the {@code bundleId}.
+	 * <p>
+	 * When a bundle becomes inactive its classes should not be used anymore. This
+	 * method removes the classes from the bundle from the collection of discovered
+	 * classes.
+	 *
+	 * @param bundleId the bundle identifier
+	 */
+	public void removeScannedClasses(Long bundleId) {
+		cachedClasses.remove(bundleId);
+		resetContextInitializers();
+	}
 
-    private void resetContextInitializers() {
-        initializerClasses.get().stream().map(ReflectTools::createInstance)
-                .forEach(this::handleTypes);
-    }
+	private void resetContextInitializers() {
+		initializerClasses.get().stream().map(ReflectTools::createInstance).forEach(this::handleTypes);
+	}
 
-    private void handleTypes(ServletContainerInitializer initializer) {
-        Optional<HandlesTypes> handleTypes = AnnotationReader
-                .getAnnotationFor(initializer.getClass(), HandlesTypes.class);
-        try {
-            initializer.onStartup(filterClasses(handleTypes.orElse(null)),
-                    getOsgiServletContext());
-        } catch (ServletException e) {
-            throw new RuntimeException(
-                    "Couldn't run servlet context initializer "
-                            + initializer.getClass(),
-                    e);
-        }
-    }
+	private void handleTypes(ServletContainerInitializer initializer) {
+		Optional<HandlesTypes> handleTypes = AnnotationReader.getAnnotationFor(initializer.getClass(),
+				HandlesTypes.class);
+		try {
+			initializer.onStartup(filterClasses(handleTypes.orElse(null)), getOsgiServletContext());
+		} catch (ServletException e) {
+			throw new RuntimeException("Couldn't run servlet context initializer " + initializer.getClass(), e);
+		}
+	}
 
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> filterClasses(HandlesTypes typesAnnotation) {
-        Set<Class<?>> result = new HashSet<>();
-        if (typesAnnotation == null) {
-            cachedClasses.forEach((bundle, classes) -> result.addAll(classes));
-        } else {
-            Class<?>[] requestedTypes = typesAnnotation.value();
+	@SuppressWarnings("unchecked")
+	private Set<Class<?>> filterClasses(HandlesTypes typesAnnotation) {
+		Set<Class<?>> result = new HashSet<>();
+		if (typesAnnotation == null) {
+			cachedClasses.forEach((bundle, classes) -> result.addAll(classes));
+		} else {
+			Class<?>[] requestedTypes = typesAnnotation.value();
 
-            Predicate<Class<?>> isAnnotation = Class::isAnnotation;
+			Predicate<Class<?>> isAnnotation = Class::isAnnotation;
 
-            List<Class<? extends Annotation>> annotations = Stream
-                    .of(requestedTypes).filter(isAnnotation)
-                    .map(clazz -> (Class<? extends Annotation>) clazz)
-                    .collect(Collectors.toList());
+			List<Class<? extends Annotation>> annotations = Stream.of(requestedTypes).filter(isAnnotation)
+					.map(clazz -> (Class<? extends Annotation>) clazz).collect(Collectors.toList());
 
-            List<Class<?>> superTypes = Stream.of(requestedTypes)
-                    .filter(isAnnotation.negate()).collect(Collectors.toList());
+			List<Class<?>> superTypes = Stream.of(requestedTypes).filter(isAnnotation.negate())
+					.collect(Collectors.toList());
 
-            Predicate<Class<?>> hasType = clazz -> annotations.stream()
-                    .anyMatch(annotation -> AnnotationReader
-                            .getAnnotationFor(clazz, annotation).isPresent())
-                    || superTypes.stream()
-                            .anyMatch(superType -> GenericTypeReflector
-                                    .isSuperType(HasErrorParameter.class,
-                                            clazz));
+			Predicate<Class<?>> hasType = clazz -> annotations.stream()
+					.anyMatch(annotation -> AnnotationReader.getAnnotationFor(clazz, annotation).isPresent())
+					|| superTypes.stream()
+							.anyMatch(superType -> GenericTypeReflector.isSuperType(HasErrorParameter.class, clazz));
 
-            cachedClasses.forEach((bundle, classes) -> result.addAll(classes
-                    .stream().filter(hasType).collect(Collectors.toList())));
+			cachedClasses.forEach(
+					(bundle, classes) -> result.addAll(classes.stream().filter(hasType).collect(Collectors.toList())));
 
-        }
-        return result;
-    }
+		}
+		return result;
+	}
 
-    private ServletContext createOSGiServletContext() {
-        Builder<OSGiServletContext> builder = new ByteBuddy()
-                .subclass(OSGiServletContext.class);
+	private ServletContext createOSGiServletContext() {
+		Builder<OSGiServletContext> builder = new ByteBuddy().subclass(OSGiServletContext.class);
 
-        Class<? extends OSGiServletContext> osgiServletContextClass = builder
-                .make().load(OSGiServletContext.class.getClassLoader(),
-                        ClassLoadingStrategy.Default.WRAPPER)
-                .getLoaded();
+		Class<? extends OSGiServletContext> osgiServletContextClass = builder.make()
+				.load(OSGiServletContext.class.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER).getLoaded();
 
-        return ReflectTools.createProxyInstance(osgiServletContextClass,
-                ServletContext.class);
-    }
+		return ReflectTools.createProxyInstance(osgiServletContextClass, ServletContext.class);
+	}
 
-    private static final class LazyOSGiDetector {
-        private static final boolean IS_IN_OSGI = isInOSGi();
+	private static final class LazyOSGiDetector {
+		private static final boolean IS_IN_OSGI = isInOSGi();
 
-        private static boolean isInOSGi() {
-            try {
-                Class.forName("org.osgi.framework.FrameworkUtil");
-                return true;
-            } catch (ClassNotFoundException exception) {
-                return false;
-            }
-        }
-    }
+		private static boolean isInOSGi() {
+			try {
+				Class.forName("org.osgi.framework.FrameworkUtil");
+				return true;
+			} catch (ClassNotFoundException exception) {
+				return false;
+			}
+		}
+	}
 }

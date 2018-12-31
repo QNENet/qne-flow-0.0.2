@@ -32,24 +32,20 @@ import com.vaadin.flow.router.HasErrorParameter;
  * targets implementing {@link HasErrorParameter} on startup.
  */
 @HandlesTypes(HasErrorParameter.class)
-public class ErrorNavigationTargetInitializer
-        implements ServletContainerInitializer {
+public class ErrorNavigationTargetInitializer implements ServletContainerInitializer {
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
-        if (classSet == null) {
-            classSet = new HashSet<>();
-        }
-        Set<Class<? extends Component>> routes = classSet.stream()
-                // Liberty 18 also includes the interface itself in the set...
-                .filter(clazz -> clazz != HasErrorParameter.class)
-                .map(clazz -> (Class<? extends Component>) clazz)
-                .collect(Collectors.toSet());
+	@SuppressWarnings("unchecked")
+	@Override
+	public void onStartup(Set<Class<?>> classSet, ServletContext servletContext) throws ServletException {
+		if (classSet == null) {
+			classSet = new HashSet<>();
+		}
+		Set<Class<? extends Component>> routes = classSet.stream()
+				// Liberty 18 also includes the interface itself in the set...
+				.filter(clazz -> clazz != HasErrorParameter.class).map(clazz -> (Class<? extends Component>) clazz)
+				.collect(Collectors.toSet());
 
-        RouteRegistry.getInstance(servletContext)
-                .setErrorNavigationTargets(routes);
-    }
+		RouteRegistry.getInstance(servletContext).setErrorNavigationTargets(routes);
+	}
 
 }

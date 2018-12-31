@@ -63,181 +63,147 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
  * @see VaadinServletConfiguration#disableAutomaticServletRegistration()
  */
 public class ServletDeployer implements ServletContextListener {
-    private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
+	private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
-    private static class StubServletConfig
-            implements ServletConfig {
-        private final ServletContext context;
-        private final ServletRegistration registration;
+	private static class StubServletConfig implements ServletConfig {
+		private final ServletContext context;
+		private final ServletRegistration registration;
 
-        private StubServletConfig(ServletContext context,
-                ServletRegistration registration) {
-            this.context = context;
-            this.registration = registration;
-        }
+		private StubServletConfig(ServletContext context, ServletRegistration registration) {
+			this.context = context;
+			this.registration = registration;
+		}
 
-        @Override
-        public String getServletName() {
-            return registration.getName();
-        }
+		@Override
+		public String getServletName() {
+			return registration.getName();
+		}
 
-        @Override
-        public ServletContext getServletContext() {
-            return context;
-        }
+		@Override
+		public ServletContext getServletContext() {
+			return context;
+		}
 
-        @Override
-        public String getInitParameter(String name) {
-            return registration.getInitParameter(name);
-        }
+		@Override
+		public String getInitParameter(String name) {
+			return registration.getInitParameter(name);
+		}
 
-        @Override
-        public Enumeration<String> getInitParameterNames() {
-            return Collections
-                    .enumeration(registration.getInitParameters().keySet());
-        }
-    }
+		@Override
+		public Enumeration<String> getInitParameterNames() {
+			return Collections.enumeration(registration.getInitParameters().keySet());
+		}
+	}
 
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        ServletContext context = sce.getServletContext();
-        Collection<DeploymentConfiguration> servletConfigurations = getServletConfigurations(
-                context);
+	@Override
+	public void contextInitialized(ServletContextEvent sce) {
+		ServletContext context = sce.getServletContext();
+		Collection<DeploymentConfiguration> servletConfigurations = getServletConfigurations(context);
 
-        boolean enableServlets = true;
-        boolean hasDevelopmentMode = servletConfigurations.isEmpty();
-        for (DeploymentConfiguration configuration : servletConfigurations) {
-            enableServlets = enableServlets
-                    && !configuration.disableAutomaticServletRegistration();
-            hasDevelopmentMode = hasDevelopmentMode
-                    || !configuration.useCompiledFrontendResources();
-        }
+		boolean enableServlets = true;
+		boolean hasDevelopmentMode = servletConfigurations.isEmpty();
+		for (DeploymentConfiguration configuration : servletConfigurations) {
+			enableServlets = enableServlets && !configuration.disableAutomaticServletRegistration();
+			hasDevelopmentMode = hasDevelopmentMode || !configuration.useCompiledFrontendResources();
+		}
 
-        if (enableServlets) {
-            createAppServlet(context);
-            if (hasDevelopmentMode) {
-                createServletIfNotExists(context, "frontendFilesServlet",
-                        "/frontend/*");
-            }
-        }
-    }
+		if (enableServlets) {
+			createAppServlet(context);
+			if (hasDevelopmentMode) {
+				createServletIfNotExists(context, "frontendFilesServlet", "/frontend/*");
+			}
+		}
+	}
 
-    private Collection<DeploymentConfiguration> getServletConfigurations(
-            ServletContext context) {
-        Collection<? extends ServletRegistration> registrations = context
-                .getServletRegistrations().values();
-        Collection<DeploymentConfiguration> result = new ArrayList<>(
-                registrations.size());
-        for (ServletRegistration registration : registrations) {
-            loadClass(context.getClassLoader(), registration.getClassName())
-                    .ifPresent(
-                            servletClass -> result
-                                    .add(createDeploymentConfiguration(
-                                            new StubServletConfig(context,
-                                                    registration),
-                                            servletClass)));
-        }
-        return result;
-    }
+	private Collection<DeploymentConfiguration> getServletConfigurations(ServletContext context) {
+		Collection<? extends ServletRegistration> registrations = context.getServletRegistrations().values();
+		Collection<DeploymentConfiguration> result = new ArrayList<>(registrations.size());
+		for (ServletRegistration registration : registrations) {
+			loadClass(context.getClassLoader(), registration.getClassName()).ifPresent(servletClass -> result
+					.add(createDeploymentConfiguration(new StubServletConfig(context, registration), servletClass)));
+		}
+		return result;
+	}
 
-    private DeploymentConfiguration createDeploymentConfiguration(
-            ServletConfig servletConfig, Class<?> servletClass) {
-        try {
-            return DeploymentConfigurationFactory
-                    .createPropertyDeploymentConfiguration(servletClass, servletConfig);
-        } catch (ServletException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                    servletConfig.getServletName(), servletClass), e);
-        }
-    }
+	private DeploymentConfiguration createDeploymentConfiguration(ServletConfig servletConfig, Class<?> servletClass) {
+		try {
+			return DeploymentConfigurationFactory.createPropertyDeploymentConfiguration(servletClass, servletConfig);
+		} catch (ServletException e) {
+			throw new IllegalStateException(String.format(
+					"Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
+					servletConfig.getServletName(), servletClass), e);
+		}
+	}
 
-    private void createAppServlet(ServletContext context) {
-        if (!RouteRegistry.getInstance(context).hasNavigationTargets()) {
-            getLogger().info(
-                    "{} there are no navigation targets annotated with @Route",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
-            return;
-        }
+	private void createAppServlet(ServletContext context) {
+		if (!RouteRegistry.getInstance(context).hasNavigationTargets()) {
+			getLogger().info("{} there are no navigation targets annotated with @Route",
+					SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
+			return;
+		}
 
-        ServletRegistration vaadinServlet = findVaadinServlet(context);
-        if (vaadinServlet != null) {
-            getLogger().info(
-                    "{} there is already a Vaadin servlet with the name {}",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE,
-                    vaadinServlet.getName());
-            return;
-        }
+		ServletRegistration vaadinServlet = findVaadinServlet(context);
+		if (vaadinServlet != null) {
+			getLogger().info("{} there is already a Vaadin servlet with the name {}",
+					SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, vaadinServlet.getName());
+			return;
+		}
 
-        createServletIfNotExists(context, getClass().getName(), "/*");
-    }
+		createServletIfNotExists(context, getClass().getName(), "/*");
+	}
 
-    private void createServletIfNotExists(ServletContext context, String name,
-            String path) {
-        ServletRegistration existingServlet = findServletByPathPart(context,
-                path);
-        if (existingServlet != null) {
-            getLogger().info(
-                    "{} there is already a {} servlet with the name {} for path {} given",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE,
-                    existingServlet, existingServlet.getName(), path);
-            return;
-        }
+	private void createServletIfNotExists(ServletContext context, String name, String path) {
+		ServletRegistration existingServlet = findServletByPathPart(context, path);
+		if (existingServlet != null) {
+			getLogger().info("{} there is already a {} servlet with the name {} for path {} given",
+					SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, existingServlet, existingServlet.getName(), path);
+			return;
+		}
 
-        ServletRegistration.Dynamic registration = context.addServlet(name,
-                VaadinServlet.class);
-        if (registration == null) {
-            // Not expected to ever happen
-            getLogger().info("{} there is already a servlet with the name {}",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, name);
-            return;
-        }
+		ServletRegistration.Dynamic registration = context.addServlet(name, VaadinServlet.class);
+		if (registration == null) {
+			// Not expected to ever happen
+			getLogger().info("{} there is already a servlet with the name {}",
+					SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, name);
+			return;
+		}
 
-        getLogger().info(
-                "Automatically deploying Vaadin servlet with name {} to {}",
-                name, path);
+		getLogger().info("Automatically deploying Vaadin servlet with name {} to {}", name, path);
 
-        registration.setAsyncSupported(true);
-        registration.addMapping(path);
-    }
+		registration.setAsyncSupported(true);
+		registration.addMapping(path);
+	}
 
-    private ServletRegistration findServletByPathPart(ServletContext context,
-            String path) {
-        return context.getServletRegistrations().values().stream().filter(
-                registration -> registration.getMappings().contains(path))
-                .findAny().orElse(null);
-    }
+	private ServletRegistration findServletByPathPart(ServletContext context, String path) {
+		return context.getServletRegistrations().values().stream()
+				.filter(registration -> registration.getMappings().contains(path)).findAny().orElse(null);
+	}
 
-    private ServletRegistration findVaadinServlet(ServletContext context) {
-        return context.getServletRegistrations().values().stream()
-                .filter(registration -> isVaadinServlet(
-                        context.getClassLoader(), registration.getClassName()))
-                .findAny().orElse(null);
-    }
+	private ServletRegistration findVaadinServlet(ServletContext context) {
+		return context.getServletRegistrations().values().stream()
+				.filter(registration -> isVaadinServlet(context.getClassLoader(), registration.getClassName()))
+				.findAny().orElse(null);
+	}
 
-    private boolean isVaadinServlet(ClassLoader classLoader, String className) {
-        return loadClass(classLoader, className)
-                .map(VaadinServlet.class::isAssignableFrom).orElse(false);
-    }
+	private boolean isVaadinServlet(ClassLoader classLoader, String className) {
+		return loadClass(classLoader, className).map(VaadinServlet.class::isAssignableFrom).orElse(false);
+	}
 
-    private Optional<Class<?>> loadClass(ClassLoader classLoader,
-            String className) {
-        try {
-            return Optional.of(classLoader.loadClass(className));
-        } catch (ClassNotFoundException e) {
-            getLogger().warn(
-                    "Failed to load class {}, ignoring it when deploying Vaadin servlets",
-                    className, e);
-            return Optional.empty();
-        }
-    }
+	private Optional<Class<?>> loadClass(ClassLoader classLoader, String className) {
+		try {
+			return Optional.of(classLoader.loadClass(className));
+		} catch (ClassNotFoundException e) {
+			getLogger().warn("Failed to load class {}, ignoring it when deploying Vaadin servlets", className, e);
+			return Optional.empty();
+		}
+	}
 
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        // Nothing to do
-    }
+	@Override
+	public void contextDestroyed(ServletContextEvent sce) {
+		// Nothing to do
+	}
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(ServletDeployer.class.getName());
-    }
+	private static Logger getLogger() {
+		return LoggerFactory.getLogger(ServletDeployer.class.getName());
+	}
 }
