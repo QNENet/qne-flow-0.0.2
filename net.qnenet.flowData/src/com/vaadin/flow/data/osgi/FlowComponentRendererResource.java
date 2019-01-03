@@ -28,17 +28,19 @@ import com.vaadin.flow.osgi.support.OsgiVaadinStaticResource;
  *
  */
 @Component(immediate = true, service = OsgiVaadinStaticResource.class)
-public class FlowComponentRendererResource
-        implements OsgiVaadinStaticResource, Serializable {
+public class FlowComponentRendererResource implements OsgiVaadinStaticResource, Serializable {
 
-    @Override
-    public String getPath() {
-        return "/META-INF/resources/frontend/flow-component-renderer.html";
-    }
+	@Override
+	public String getPath() {
+//        return "/META-INF/resources/frontend/flow-component-renderer.html";
+//		return "/resources/frontend/flow-component-renderer.html";
+		return "/frontend/flow-component-renderer.html";
 
-    @Override
-    public String getAlias() {
-        return "/frontend/flow-component-renderer.html";
-    }
+	}
+
+	@Override
+	public String getAlias() {
+		return "/frontend/flow-component-renderer.html";
+	}
 
 }

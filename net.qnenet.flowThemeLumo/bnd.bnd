@@ -14,3 +14,6 @@ javac.target: 1.8
 Bundle-Version: 0.0.0.${tstamp}
 
 Export-Package: com.vaadin.flow.theme.lumo
+
+Implementation-URL: \
+http://vaadin.com/flow-theme-integrations/vaadin-lumo-theme

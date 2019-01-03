@@ -19,4 +19,20 @@ javac.target: 1.8
 
 Bundle-Version: 0.0.0.${tstamp}
 
-Export-Package: com.vaadin.flow.data.*
+#Export-Package: com.vaadin.flow.data.*
+
+Include-Resource: frontend=resources/frontend
+
+#Bundle-SymbolicName: ${project.groupId}.flow.data
+#Bundle-Name: Vaadin Flow Data
+#Bundle-Version: ${osgi.bundle.version}
+#Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+
+#Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+
+Import-Package: \
+	javax.validation*;resolution:=optional;version='2.0.1',\
+    com.vaadin.flow*;version='1.2.3',\
+    *
+Export-Package: com.vaadin.flow.data*;-noimport:=true
+

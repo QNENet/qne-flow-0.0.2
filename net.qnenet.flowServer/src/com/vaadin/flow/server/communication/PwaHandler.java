@@ -124,6 +124,10 @@ public class PwaHandler implements RequestHandler {
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
         String requestUri = request.getPathInfo();
+        
+//        if (requestUri == null) {
+//        	requestUri = "";
+//		}
 
         if (pwaRegistry.getPwaConfiguration().isEnabled()) {
             if (requestHandlerMap.containsKey(requestUri)) {

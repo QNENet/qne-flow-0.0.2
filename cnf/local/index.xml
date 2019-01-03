@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="Local" increment="1545865128156">
+<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="Local" increment="1546393244493">
   <resource>
     <capability namespace="osgi.identity">
       <attribute name="license" value="http://www.apache.org/licenses/LICENSE-2.0"/>
@@ -302,6 +302,296 @@
     </requirement>
     <requirement namespace="osgi.wiring.package">
       <directive name="filter" value="(&amp;(osgi.wiring.package=com.vaadin.flow.dom)(&amp;(version&gt;=1.2.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.ee">
+      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.8))"/>
+    </requirement>
+  </resource>
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="license" value="http://www.apache.org/licenses/LICENSE-2.0"/>
+      <attribute name="osgi.identity" value="com.vaadin.flow.server"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="bundle-version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="com.vaadin.flow.server"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.host" value="com.vaadin.flow.server"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.client"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component.internal,com.vaadin.flow.component.page,com.vaadin.flow.dom,com.vaadin.flow.function,com.vaadin.flow.internal,com.vaadin.flow.router,com.vaadin.flow.server,com.vaadin.flow.server.communication,com.vaadin.flow.shared,com.vaadin.flow.shared.communication,com.vaadin.flow.shared.ui,com.vaadin.flow.theme,elemental.json"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.component"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.shared.ui"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.component.dependency"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.component.page,com.vaadin.flow.dom,com.vaadin.flow.function,com.vaadin.flow.internal,com.vaadin.flow.router,com.vaadin.flow.server,com.vaadin.flow.server.communication,com.vaadin.flow.shared,com.vaadin.flow.shared.ui"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.component.internal"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.router,com.vaadin.flow.shared,com.vaadin.flow.shared.communication,com.vaadin.flow.shared.ui,elemental.json"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.component.page"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.dom,com.vaadin.flow.internal,com.vaadin.flow.server,com.vaadin.flow.templatemodel,org.jsoup.nodes"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.component.polymertemplate"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.i18n,com.vaadin.flow.router,com.vaadin.flow.server"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.di"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.dom.impl,com.vaadin.flow.internal,com.vaadin.flow.server,com.vaadin.flow.shared,elemental.json,org.jsoup.nodes"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.dom"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.dom,com.vaadin.flow.internal,com.vaadin.flow.internal.nodefeature,com.vaadin.flow.server,com.vaadin.flow.shared"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.dom.impl"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.server,com.vaadin.flow.shared.communication,javax.servlet"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.function"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.i18n"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.component.dependency,com.vaadin.flow.component.internal,com.vaadin.flow.function,com.vaadin.flow.internal.change,com.vaadin.flow.internal.nodefeature,com.vaadin.flow.server,com.vaadin.flow.shared,elemental.json,javax.servlet.http"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.internal"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.internal,com.vaadin.flow.internal.nodefeature,elemental.json"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.internal.change"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.component.page,com.vaadin.flow.component.polymertemplate,com.vaadin.flow.dom,com.vaadin.flow.function,com.vaadin.flow.internal,com.vaadin.flow.internal.change,com.vaadin.flow.server,com.vaadin.flow.server.communication,com.vaadin.flow.shared,com.vaadin.flow.shared.communication,com.vaadin.flow.shared.ui,elemental.json"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.internal.nodefeature"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.dom,com.vaadin.flow.i18n,com.vaadin.flow.router.internal,com.vaadin.flow.server,com.vaadin.flow.server.startup,com.vaadin.flow.theme"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.router"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.router"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.router.internal"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.component.internal,com.vaadin.flow.component.page,com.vaadin.flow.di,com.vaadin.flow.function,com.vaadin.flow.internal,com.vaadin.flow.router,com.vaadin.flow.server.startup,com.vaadin.flow.server.webjar,com.vaadin.flow.shared,com.vaadin.flow.shared.communication,com.vaadin.flow.shared.ui,com.vaadin.flow.theme,elemental.json,javax.servlet,javax.servlet.http,org.jsoup.nodes"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.server"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.function,com.vaadin.flow.internal,com.vaadin.flow.server,com.vaadin.flow.server.communication.rpc,com.vaadin.flow.theme,elemental.json,javax.servlet,org.atmosphere.cpr,org.atmosphere.handler"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.server.communication"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.internal,elemental.json"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.server.communication.rpc"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.server"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.server.communication.streaming"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="javax.servlet,org.osgi.framework,org.osgi.util.tracker"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.server.osgi"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.component,com.vaadin.flow.component.page,com.vaadin.flow.router,com.vaadin.flow.server,com.vaadin.flow.shared.ui,com.vaadin.flow.theme,javax.servlet,javax.servlet.annotation"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.server.startup"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.function,javax.servlet.http"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.server.webjar"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.shared"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.shared.communication"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="elemental.json"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.shared.ui"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.shared.util"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <directive name="uses" value="com.vaadin.flow.internal,com.vaadin.flow.internal.nodefeature,elemental.json,net.bytebuddy.implementation.bind.annotation"/>
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.templatemodel"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="version" value="1.2.3" type="Version"/>
+      <attribute name="osgi.wiring.package" value="com.vaadin.flow.theme"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="1043329" type="Long"/>
+      <attribute name="url" value="com.vaadin.flow.server/com.vaadin.flow.server-1.2.3.jar"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="osgi.content" value="42420AD22AAAEC0C26948EE4C6CCFCE837CF9B4FF2C6F767756385F314443DC0"/>
+    </capability>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.atmosphere.cache)(version&gt;=2.4.30.vaadin1))"/>
+      <directive name="resolution" value="optional"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.atmosphere.cpr)(version&gt;=2.4.30.vaadin1))"/>
+      <directive name="resolution" value="optional"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.atmosphere.handler)(version&gt;=2.4.30.vaadin1))"/>
+      <directive name="resolution" value="optional"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.atmosphere.interceptor)(version&gt;=2.4.30.vaadin1))"/>
+      <directive name="resolution" value="optional"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.atmosphere.util)(version&gt;=2.4.30.vaadin1))"/>
+      <directive name="resolution" value="optional"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.googlecode.gentyref)(&amp;(version&gt;=1.2.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.helger.commons.collection.impl)(&amp;(version&gt;=9.1.0)(!(version&gt;=10.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.helger.css)(&amp;(version&gt;=6.1.0)(!(version&gt;=7.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.helger.css.decl)(&amp;(version&gt;=6.1.0)(!(version&gt;=7.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.helger.css.reader)(&amp;(version&gt;=6.1.0)(!(version&gt;=7.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.helger.css.reader.errorhandler)(&amp;(version&gt;=6.1.0)(!(version&gt;=7.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.helger.css.writer)(&amp;(version&gt;=6.1.0)(!(version&gt;=7.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=com.vaadin.flow.client))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=elemental.json)(&amp;(version&gt;=2.8.0)(!(version&gt;=3.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=elemental.json.impl)(&amp;(version&gt;=2.8.0)(!(version&gt;=3.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.imageio))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.servlet)(&amp;(version&gt;=3.1.0)(!(version&gt;=4.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.servlet.annotation)(&amp;(version&gt;=3.1.0)(!(version&gt;=4.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.servlet.http)(&amp;(version&gt;=3.1.0)(!(version&gt;=4.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy.description.method)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy.description.modifier)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy.description.type)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy.dynamic)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy.dynamic.loading)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy.implementation)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy.implementation.bind.annotation)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=net.bytebuddy.matcher)(&amp;(version&gt;=1.9.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.commons.fileupload)(&amp;(version&gt;=1.3.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.commons.fileupload.servlet)(&amp;(version&gt;=1.3.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.commons.io)(&amp;(version&gt;=1.4.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.jsoup)(&amp;(version&gt;=1.10.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.jsoup.nodes)(&amp;(version&gt;=1.10.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.jsoup.parser)(&amp;(version&gt;=1.10.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.jsoup.select)(&amp;(version&gt;=1.10.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.osgi.framework)(&amp;(version&gt;=1.8.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.osgi.framework.wiring)(&amp;(version&gt;=1.2.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.osgi.util.tracker)(&amp;(version&gt;=1.5.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.slf4j)(&amp;(version&gt;=1.7.0)(!(version&gt;=2.0.0))))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.slf4j.helpers)(&amp;(version&gt;=1.7.0)(!(version&gt;=2.0.0))))"/>
     </requirement>
     <requirement namespace="osgi.ee">
       <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.8))"/>

@@ -29,7 +29,7 @@ Include-Resource: VAADIN=resources/VAADIN, services=services
 
 #Bundle-SymbolicName: com.vaadin.flow.server
 
-Bundle-Name: Vaadin Flow Server
+#Bundle-Name: Vaadin Flow Server
 Bundle-Version: 1.2.3
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
