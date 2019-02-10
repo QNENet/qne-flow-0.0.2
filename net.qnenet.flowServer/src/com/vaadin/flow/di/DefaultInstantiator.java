@@ -37,93 +37,85 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * @since 1.0
  */
 public class DefaultInstantiator implements Instantiator {
-    private VaadinService service;
-    private static final AtomicReference<I18NProvider> i18nProvider = new AtomicReference<>();
+	private VaadinService service;
+	private static final AtomicReference<I18NProvider> i18nProvider = new AtomicReference<>();
 
-    /**
-     * Creates a new instantiator for the given service.
-     *
-     * @param service
-     *            the service to use
-     */
-    public DefaultInstantiator(VaadinService service) {
-        this.service = service;
-    }
+	/**
+	 * Creates a new instantiator for the given service.
+	 *
+	 * @param service the service to use
+	 */
+	public DefaultInstantiator(VaadinService service) {
+		this.service = service;
+	}
 
-    @Override
-    public boolean init(VaadinService service) {
-        return service == this.service;
-    }
+	@Override
+	public boolean init(VaadinService service) {
+		return service == this.service;
+	}
 
-    @Override
-    public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-        return getServiceLoaderListeners(service.getClassLoader());
-    }
+	@Override
+	public Stream<VaadinServiceInitListener> getServiceInitListeners() {
+		return getServiceLoaderListeners(service.getClassLoader());
+	}
 
-    @Override
-    public <T> T getOrCreate(Class<T> type) {
-        return ReflectTools.createInstance(type);
-    }
+	@Override
+	public <T> T getOrCreate(Class<T> type) {
+		return ReflectTools.createInstance(type);
+	}
 
-    /**
-     * Helper for finding service init listeners using {@link ServiceLoader}.
-     *
-     * @param classloader
-     *            the classloader to use for finding the listeners
-     * @return a stream of service init listeners
-     */
-    public static Stream<VaadinServiceInitListener> getServiceLoaderListeners(
-            ClassLoader classloader) {
-        ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader
-                .load(VaadinServiceInitListener.class, classloader);
-        return StreamSupport.stream(loader.spliterator(), false);
-    }
+	/**
+	 * Helper for finding service init listeners using {@link ServiceLoader}.
+	 *
+	 * @param classloader the classloader to use for finding the listeners
+	 * @return a stream of service init listeners
+	 */
+	public static Stream<VaadinServiceInitListener> getServiceLoaderListeners(ClassLoader classloader) {
+		ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader.load(VaadinServiceInitListener.class,
+				classloader);
+		return StreamSupport.stream(loader.spliterator(), false);
+	}
 
-    @Override
-    public I18NProvider getI18NProvider() {
-        if (i18nProvider.get() == null) {
-            i18nProvider.compareAndSet(null, getI18NProviderInstance());
-        }
-        return i18nProvider.get();
-    }
+	@Override
+	public I18NProvider getI18NProvider() {
+		if (i18nProvider.get() == null) {
+			i18nProvider.compareAndSet(null, getI18NProviderInstance());
+		}
+		return i18nProvider.get();
+	}
 
-    private I18NProvider getI18NProviderInstance() {
-        String property = getI18NProviderProperty();
-        if (property == null) {
-            return null;
-        }
-        try {
-            // Get i18n provider class if found in application
-            // properties
-            Class<?> providerClass = DefaultInstantiator.class.getClassLoader()
-                    .loadClass(property);
-            if (I18NProvider.class.isAssignableFrom(providerClass)) {
+	private I18NProvider getI18NProviderInstance() {
+		String property = getI18NProviderProperty();
+		if (property == null) {
+			return null;
+		}
+		try {
+			// Get i18n provider class if found in application
+			// properties
+			Class<?> providerClass = DefaultInstantiator.class.getClassLoader().loadClass(property);
+			if (I18NProvider.class.isAssignableFrom(providerClass)) {
 
-                return ReflectTools.createInstance(
-                        (Class<? extends I18NProvider>) providerClass);
-            }
-        } catch (ClassNotFoundException e) {
-            throw new InvalidI18NConfigurationException(
-                    "Failed to load given provider class '" + property
-                            + "' as it was not found by the class loader.",
-                    e);
-        }
-        return null;
-    }
+				return ReflectTools.createInstance((Class<? extends I18NProvider>) providerClass);
+			}
+		} catch (ClassNotFoundException e) {
+			throw new InvalidI18NConfigurationException(
+					"Failed to load given provider class '" + property + "' as it was not found by the class loader.",
+					e);
+		}
+		return null;
+	}
 
-    /**
-     * Get the I18NProvider property from the session configurator or try to
-     * load it from application.properties property file.
-     *
-     * @return I18NProvider parameter or null if not found
-     */
-    private String getI18NProviderProperty() {
-        DeploymentConfiguration deploymentConfiguration = service
-                .getDeploymentConfiguration();
-        if (deploymentConfiguration == null) {
-            return null;
-        }
-        return deploymentConfiguration
-                .getStringProperty(Constants.I18N_PROVIDER, null);
-    }
+	/**
+	 * Get the I18NProvider property from the session configurator or try to load it
+	 * from application.properties property file.
+	 *
+	 * @return I18NProvider parameter or null if not found
+	 */
+	private String getI18NProviderProperty() {
+		DeploymentConfiguration deploymentConfiguration = service.getDeploymentConfiguration();
+		if (deploymentConfiguration == null) {
+			return null;
+		}
+		return deploymentConfiguration.getStringProperty(Constants.I18N_PROVIDER, null);
+	}
 }

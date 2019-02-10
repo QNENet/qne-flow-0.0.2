@@ -8,7 +8,8 @@
 	net.qnenet.flowComponentOrderedLayout;version=latest,\
 	net.qnenet.flowOSGiSupport;version=latest,\
 	net.qnenet.flowServer;version=latest,\
-	net.qnenet.flowThemeLumo;version=latest
+	net.qnenet.flowThemeLumo;version=latest,\
+	com.vaadin.external.gwt
 
 -testpath: \
 	${junit}
@@ -30,7 +31,9 @@ Bundle-Version: 0.0.0.${tstamp}
 
 #Include-Resource: /resources/icons/icon.png=/resources/icons/icon.png
 	
-Include-Resource: frontend=/resources/frontend
+Include-Resource: frontend=/resources/frontend, icons=/resources/icons
+
+#Include-Resource: frontend=frontend
 
 # assignment ::= PATH '=' source
 

@@ -30,7 +30,9 @@ public class OSGiClientStaticResource implements OsgiVaadinStaticResource {
 
     @Override
     public String getPath() {
-        return "/META-INF/resources/VAADIN/static/client";
+//        return "/META-INF/resources/VAADIN/static/client";
+        return "/VAADIN/static/client";
+
     }
 
     @Override

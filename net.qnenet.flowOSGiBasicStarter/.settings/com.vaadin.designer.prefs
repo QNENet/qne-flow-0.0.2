@@ -1,5 +1,7 @@
 alwaysUseUtf8=true
 applicationTheme=Project structure is not supported.
+defaultJavaCompanionFolder=src
+defaultTemplateFolder=src
 eclipse.preferences.version=1
 serverAddress=192.168.1.9
 serverPort=59981
